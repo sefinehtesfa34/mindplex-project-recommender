@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: sefineh
+      POSTGRES_DB: sefineh 
+      POSTGRES_PASS: Sefineh@2844
+    volumes:
+      - pgdata:/var/lib/posgresql/data
+  recommender:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./recommender:/recommender
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+volumes:
+  pgdata:
