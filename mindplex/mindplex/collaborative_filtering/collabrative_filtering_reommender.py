@@ -5,14 +5,14 @@ from keras.models import Model
 from sklearn.model_selection import train_test_split
 import numpy as np 
 class CollaborativeFiltering:
-    def __init__(self,users_interaction_df) -> None:
+    def __init__(self,users_interaction_df,userId) -> None:
         self.users_interaction_df=users_interaction_df
+        self.userId=userId
         self.model_trainer()
     def model_trainer(self):        
         contentId_to_int={contentId:index for index,contentId in enumerate(set(self.users_interaction_df.contentId))}
         int_to_contentId={index:contentId for index,contentId in enumerate(set(self.users_interaction_df.contentId))}
         userId_to_int={userId:index for index,userId in enumerate(set(self.users_interaction_df.userId))}
-        int_to_userId={index:userId for index,userId in  enumerate(set(self.users_interaction_df.userId))}
         self.users_interaction_df.contentId=self.users_interaction_df.contentId.apply(lambda x: contentId_to_int[x])
         self.users_interaction_df.userId=self.users_interaction_df.userId.apply(lambda x:userId_to_int[x])
         
@@ -39,8 +39,12 @@ class CollaborativeFiltering:
         model = Model([user_input, users_input], out)
         model.compile('adam', 'mean_squared_error')
         history = model.fit([train.userId, train.contentId], train.eventStrength, epochs=10, verbose=1)
+        #Here we can save the model when it perfoms well after retrain it.
+        model.evaluate([test.userId, test.contentId], test.eventStrength)
         users_interactions = np.array(list(set(self.users_interaction_df.contentId)))
-        id_user = 3
+        
+        id_user = userId_to_int[self.userId]
+        
         user = np.array([id_user for _ in range(len(users_interactions))])
         predictions = model.predict([user, users_interactions])
         predictions = np.array([a[0] for a in predictions])

@@ -297,7 +297,7 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
         # interactions_df=interactions_df.set_index("userId")
         interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
         interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
-        collaborative=CollaborativeFiltering(interactions_df)
+        collaborative=CollaborativeFiltering(interactions_df,userId=userId)
         recommended_items=collaborative.recommended_ids
         recommended_queryset=Article.objects.filter(contentId__in=recommended_items)
         
