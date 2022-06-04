@@ -7,6 +7,7 @@ from scipy import rand
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
+from mindplex.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer 
 from django_pandas.io import read_frame
 
@@ -265,6 +266,59 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
         return self.get_paginated_response(serializer.data)
 
 
+class CollaborativeFilteringView(APIView,PageNumberPagination):
+    def __init__(self) -> None:
+        self.eventStrength={
+            "LIKE":1.0,
+            "VIEW":5.0,
+            "FOLLOW":2.0,
+            "UNFOLLOW":2.0,
+            "DISLIKE":1.0,
+            "REACT-POSITIVE":1.5,
+            "REACT-NEGATIVE":1.5,
+            "COMMENT-BEST-POSITIVE":3.0,
+            "COMMENT-AVERAGE-POSITIVE":2.5,
+            "COMMENT-GOOD-POSITIVE":2.0,
+            "COMMENT-BEST-NEGATIVE":3.0,
+            "COMMENT-AVERAGE-NEGATIVE":2.5,
+            "COMMENT-GOOD-NEGATIVE":2.0,    
+            }
+    def get(self,request,userId):
+        interactions=Interactions.objects.all()
+        interactions_df=read_frame(interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df.columns=["userId","eventType","contentId"]
+        interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
+        # interactions_df=interactions_df.set_index("userId")
+        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
+        collaborative=CollaborativeFiltering(interactions_df)
+        recommended_items=collaborative.recommended_ids
+        recommended_queryset=Article.objects.filter(contentId__in=recommended_items)
         
+        result=self.paginate_queryset(recommended_queryset,request,view=self)
+        serializer=ArticleSerializer(result,many=True)    
+        
+        return self.get_paginated_response(serializer.data)
 
-
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
