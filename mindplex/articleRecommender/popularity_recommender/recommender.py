@@ -17,7 +17,6 @@ class PopularityRecommender:
         return self.MODEL_NAME
         
     def recommend_items(self, topn=10, verbose=False):
-        print(self.popularity_df)
         recommendations_df = self.popularity_df\
                                .sort_values('eventStrength', ascending = False) \
                                .head(topn)['contentId']
