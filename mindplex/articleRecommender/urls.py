@@ -9,4 +9,5 @@ urlpatterns = [
     path('interact/<str:userId>/',views.InteractionsView.as_view()),
     path('recommend/<str:userId>/',views.PopularityRecommenderView.as_view()),
     path('content-based/<str:userId>/',views.ContentBasedRecommenderView.as_view()),
+    path("collaborative/<str:userId>/",views.CollaborativeFilteringView.as_view() ),
     ]
