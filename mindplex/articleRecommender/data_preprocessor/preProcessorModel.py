@@ -3,21 +3,18 @@ import math
 
 from articleRecommender.popularity_recommender.recommender import PopularityRecommender
 class PreprocessingModel:
-    def __init__(self,interactions_df,article_df,eventStrength,flag=None):
+    def __init__(self,interactions_df,article_df,eventStrength):
         self.eventStrength=eventStrength
         self.interactions_df=interactions_df
-        self.article_df=article_df
-        
+        self.article_df=article_df        
         self.preporcessor()
         self.recommended=None
-        self.flag=flag
-        if self.flag=="popularity":
-            self.popularity_model=PopularityRecommender(self.interactions_df,self.article_df)
+        
+        self.popularity_model=PopularityRecommender(self.interactions_df,self.article_df)
         
         
     def recommend(self):
-        if self.flag=='popularity':
-            recommended_items=self.popularity_model.recommend_items()
+        recommended_items=self.popularity_model.recommend_items()
                 
         return recommended_items 
     def preporcessor(self):
@@ -48,8 +45,6 @@ class PreprocessingModel:
         
 class PopularityRecommender:
     
-    MODEL_NAME = 'Popularity'
-    
     def __init__(self, popularity_df, items_df=None):
         self.popularity_df = popularity_df
         self.compute_popular_items()
@@ -61,8 +56,6 @@ class PopularityRecommender:
                                     .sort_values(ascending=False)\
                                     .reset_index()
         
-    def get_model_name(self):
-        return self.MODEL_NAME
         
     def recommend_items(self, topn=10, verbose=False):
         print(self.popularity_df)

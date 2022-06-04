@@ -8,6 +8,7 @@ from articleRecommender.collaborative_filtering.collabrative_filtering_reommende
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
+
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer 
 from django_pandas.io import read_frame
 
@@ -177,8 +178,7 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
         self.preprocessingModel=PreprocessingModel(
             interactions_df,
             articles_df,
-            self.eventStrength,
-            flag="popularity"
+            self.eventStrength
             )
             
         try:
