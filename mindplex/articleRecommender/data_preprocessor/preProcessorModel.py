@@ -47,6 +47,7 @@ class PopularityRecommender:
     
     def __init__(self, popularity_df, items_df=None):
         self.popularity_df = popularity_df
+        
         self.compute_popular_items()
         self.items_df = items_df
         

@@ -167,7 +167,6 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
         interactions_df.columns=["userId","eventType","contentId"]
         interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
         
-
         self.article=Article.objects.exclude(pk__in=self.excluded_article_set)
         articles_df=read_frame(self.article,fieldnames=[
             "authorId",
@@ -238,7 +237,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
         interactions_df.columns=["userId","eventType","contentId"]
         interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
         interactions_df=interactions_df.set_index("userId")
-        
+     
         self.article=Article.objects.all()
         articles_df=read_frame(self.article,fieldnames=[
             "authorId",
