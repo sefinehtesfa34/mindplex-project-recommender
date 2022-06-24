@@ -10,4 +10,9 @@ urlpatterns = [
     path('popular/<str:userId>/',views.PopularityRecommenderView.as_view()),
     path('content-based/<str:userId>/',views.ContentBasedRecommenderView.as_view()),
     path("collaborative/<str:userId>/",views.CollaborativeFilteringView.as_view() ),
+    path("LBR-collaborative/<str:userId>/",views.LocationBasedRecommenderUsingCF().as_view()),
+    path("LBR-content-based/<str:userId>/",views.LBRUsingCB.as_view()),
+    path("LBR-popular/<str:userId>/",views.LocationBasedRecommenderUsingPBR.as_view()),
+    
     ]
+

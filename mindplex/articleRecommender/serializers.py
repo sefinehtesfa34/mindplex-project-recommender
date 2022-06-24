@@ -15,6 +15,7 @@ class ContentIdSerializer(serializers.ModelSerializer):
     class Meta:
         model=Interactions
         fields=['contentId']
+
         
 
 

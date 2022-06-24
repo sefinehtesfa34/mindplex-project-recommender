@@ -29,11 +29,15 @@ class ContentBasedRecommender:
         #The assumption is that self.interactions_df is userId indexed dataframe
         user_interacted_contentId=self.interactions_df.loc[userId]["contentId"]
         user_profile=[]
-        for contentId in user_interacted_contentId:
-            index=self.item_ids.index(contentId)
+        try:
+            for contentId in user_interacted_contentId:
+                index=self.item_ids.index(contentId)
+                profile=self.tfidf_matrix[index:index+1]
+                user_profile.append(profile)
+        except ValueError:
+            index=self.item_ids.index(user_interacted_contentId)
             profile=self.tfidf_matrix[index:index+1]
             user_profile.append(profile)
-            
         user_profile= scipy.sparse.vstack(user_profile)
         self.interactions_df['eventStrength'] = self.interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x))
         
