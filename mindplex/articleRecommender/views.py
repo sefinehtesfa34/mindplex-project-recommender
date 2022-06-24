@@ -233,9 +233,8 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
                             "contentId__contentId",
                             
                             ])
+        interactions_df=interactions_df.rename({"userId":"userId","eventType":"eventType","contentId_contentId":"contentId"})
         
-        interactions_df.columns=["userId","eventType","contentId"]
-        interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
         interactions_df=interactions_df.set_index("userId")
      
         self.article=Article.objects.all()
@@ -290,9 +289,7 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
                             "contentId__contentId",
                             
                             ])
-        interactions_df.columns=["userId","eventType","contentId"]
-        interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
-        # interactions_df=interactions_df.set_index("userId")
+        interactions_df=interactions_df.rename({"userId":"userId","eventType":"eventType","contentId_contentId":"contentId"}) 
         interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
         interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
         collaborative=CollaborativeFiltering(interactions_df,userId=userId)
