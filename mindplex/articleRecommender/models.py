@@ -1,9 +1,5 @@
 from django.db import models
 
-# class ArticleManager(models.Manager):
-#     def get_by_natural_key(self, contentId):
-#         return self.get(contentId=contentId)
-
 class Article(models.Model):
     authorId=models.CharField(max_length=100)
     authorResidence=models.CharField(max_length=100)
@@ -13,13 +9,8 @@ class Article(models.Model):
     source=models.CharField(max_length=100,default='')
     timestamp=models.IntegerField() 
     title=models.CharField(max_length=100)
-    
-    # objects=ArticleManager()
     class Meta:
         ordering=["timestamp"]
-    
-    # def natural_key(self):
-    #     return self.contentId
         
 class Interactions(models.Model):
     CHOiCES=[
