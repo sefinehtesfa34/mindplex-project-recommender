@@ -1,12 +1,9 @@
 from typing import Any
-import pandas
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from scipy import rand
-from sympy import Q
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.models import Article, Interactions
@@ -384,7 +381,6 @@ class LBRUsingCB(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
-    
     
     def get(self,request,userId,format=None):
         
