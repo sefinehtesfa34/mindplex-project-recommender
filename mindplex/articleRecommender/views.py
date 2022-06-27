@@ -427,7 +427,8 @@ class LBRUsingCB(APIView,PageNumberPagination):
         
         recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
         
-        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
+        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)
+            
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
         
