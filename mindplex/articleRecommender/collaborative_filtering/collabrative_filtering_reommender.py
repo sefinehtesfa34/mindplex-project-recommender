@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from keras.layers import Dense,Input,Embedding,Flatten,Dot,Concatenate
 from keras.models import Model
 from sklearn.model_selection import train_test_split
+import tensorflow as tf 
 import numpy as np 
 class CollaborativeFiltering:
     def __init__(self,users_interaction_df,userId) -> None:
@@ -37,7 +38,7 @@ class CollaborativeFiltering:
         fully_con3 = Dense(128, activation='relu')(fully_con2)
         out = Dense(1)(fully_con3)
         model = Model([user_input, users_input], out)
-        model.compile('adam', 'mean_squared_error')
+        model.compile(optimizer='adam',loss="mse",metrics="accuracy")
         history = model.fit([train.userId, train.contentId], train.eventStrength, epochs=10, verbose=1)
         #Here we can save the model when it perfoms well after retrain it.
         model.evaluate([test.userId, test.contentId], test.eventStrength)
