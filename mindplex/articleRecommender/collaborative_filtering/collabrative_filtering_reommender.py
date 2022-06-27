@@ -36,15 +36,15 @@ class CollaborativeFiltering:
         user_input = Input(shape=[1], name="User-Input")
         user_embedding = Embedding(n_users+1, 5, name="User-Embedding")(user_input)
         user_vec = Flatten(name="Flatten-Users")(user_embedding)
-        concatenated = tf.keras.layers.dot([self.users_interaction_df_vec, user_vec],axes=1)
-        fully_con1 = Dense(256, activation='relu')(concatenated)
+        dot_product = tf.keras.layers.dot([self.users_interaction_df_vec, user_vec],axes=1)
+        fully_con1 = Dense(256, activation='relu')(dot_product)
         fully_con2 = Dense(128, activation='relu')(fully_con1)
         fully_con3 = Dense(128, activation='relu')(fully_con2)
         out = Dense(1)(fully_con3)
         
         model = Model([user_input, users_input], out)
         model.compile(optimizer='adam',loss="mse",metrics="accuracy")
-        history = model.fit([train.userId, train.contentId], train.eventStrength, epochs=10, verbose=1)
+        history = model.fit([train.userId, train.contentId], train.eventStrength, epochs=100, verbose=1)
         #Here we can save the model when it perfoms well after retrain it.
         model.evaluate([test.userId, test.contentId], test.eventStrength)
         users_interactions = np.array(list(set(self.users_interaction_df.contentId)))
