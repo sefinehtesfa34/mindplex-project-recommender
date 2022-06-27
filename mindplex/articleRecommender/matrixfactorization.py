@@ -18,7 +18,7 @@ class MatrixFactorization:
         self.num_users,self.num_items=self.interactions_df.shape
         self.tolerable_loss=0.001
         self.path=path 
-        self.weight_initializer=tf.random_normal_initializer(seed=seed)
+        self.weight_initializer=tf.random_normal_initializer(seed=random_seed)
         self.V=tf.Variable(self.weight_initializer((self.num_users,self.latent_features)))
         self.U=tf.Variable(self.weight_initializer((self.num_items,self.latent_features)))
         self.latent_features=latent_features

@@ -36,7 +36,7 @@ class CollaborativeFiltering:
         user_input = Input(shape=[1], name="User-Input")
         user_embedding = Embedding(n_users+1, 5, name="User-Embedding")(user_input)
         user_vec = Flatten(name="Flatten-Users")(user_embedding)
-        concatenated = Concatenate()([self.users_interaction_df_vec, user_vec])
+        concatenated = tf.keras.layers.dot([self.users_interaction_df_vec, user_vec],axes=1)
         fully_con1 = Dense(256, activation='relu')(concatenated)
         fully_con2 = Dense(128, activation='relu')(fully_con1)
         fully_con3 = Dense(128, activation='relu')(fully_con2)
