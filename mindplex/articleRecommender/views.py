@@ -16,6 +16,22 @@ from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSe
 from django_pandas.io import read_frame
 
 
+eventStrength={
+            "LIKE":1.0,
+            "VIEW":5.0,
+            "FOLLOW":2.0,
+            "UNFOLLOW":2.0,
+            "DISLIKE":1.0,
+            "REACT-POSITIVE":1.5,
+            "REACT-NEGATIVE":1.5,
+            "COMMENT-BEST-POSITIVE":3.0,
+            "COMMENT-AVERAGE-POSITIVE":2.5,
+            "COMMENT-GOOD-POSITIVE":2.0,
+            "COMMENT-BEST-NEGATIVE":3.0,
+            "COMMENT-AVERAGE-NEGATIVE":2.5,
+            "COMMENT-GOOD-NEGATIVE":2.0,    
+            }
+
 class ArticleView(APIView,PageNumberPagination):
     def get_object(self,authorId):
         try:
@@ -126,22 +142,7 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -203,21 +204,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         
@@ -273,21 +260,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
 class CollaborativeFilteringView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
     def get(self,request,userId):
         interactions=Interactions.objects.all()
         interactions_df=read_frame(interactions,
@@ -313,21 +286,8 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
 class LocationBasedRecommenderUsingCF(APIView,PageNumberPagination):
         def __init__(self, **kwargs: Any) -> None:
             super().__init__(**kwargs)
-            self.eventStrength={
-                    "LIKE":1.0,
-                "VIEW":5.0,
-                "FOLLOW":2.0,
-                "UNFOLLOW":2.0,
-                "DISLIKE":1.0,
-                "REACT-POSITIVE":1.5,
-                "REACT-NEGATIVE":1.5,
-                "COMMENT-BEST-POSITIVE":3.0,
-                "COMMENT-AVERAGE-POSITIVE":2.5,
-                "COMMENT-GOOD-POSITIVE":2.0,
-                "COMMENT-BEST-NEGATIVE":3.0,
-                "COMMENT-AVERAGE-NEGATIVE":2.5,
-                "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+            self.eventStrength=eventStrength
+            
         def get(self,request,userId):
             user_interactions=Interactions.objects.filter(userId=userId)
             serializer=InteractionsSerializer(user_interactions,many=True)
@@ -361,21 +321,7 @@ class LBRUsingCB(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         
@@ -438,21 +384,7 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         super().__init__(**kwargs)
     
         
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -516,7 +448,10 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         
 
         return self.get_paginated_response(serializer.data)
-
+class MatrixFactorizationView(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        
     
     
     
