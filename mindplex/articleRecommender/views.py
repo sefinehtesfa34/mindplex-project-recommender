@@ -450,6 +450,7 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         return self.get_paginated_response(serializer.data)
 class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
+        
         super().__init__(**kwargs)
         
     
