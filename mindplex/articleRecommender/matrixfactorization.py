@@ -17,12 +17,12 @@ class MatrixFactorization:
         self.mask=tf.not_equal(self.ratings,0)
         self.num_users,self.num_items=self.ratings.shape
         self.tolerable_loss=0.001
-        self.path=path 
+        self.path=path
+        self.latent_features=latent_features
+        self.learning_rate=learning_rate 
         self.weight_initializer=tf.random_normal_initializer(seed=random_seed)
         self.P=tf.Variable(self.weight_initializer((self.num_users,self.latent_features)))
         self.Q=tf.Variable(self.weight_initializer((self.num_items,self.latent_features)))
-        self.latent_features=latent_features
-        self.learning_rate=learning_rate
         self.epochs=epochs
         self.l2_regularizer=l2_regularizer
     def loss(self):
