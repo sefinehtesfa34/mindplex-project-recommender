@@ -1,5 +1,6 @@
+import pickle
 from typing import Any
-import pandas
+import numpy as np
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 from rest_framework.views import APIView
@@ -470,7 +471,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         average=interactions_df["eventStrength"].mean()
         ratings=interactions_df.pivot_table(index="userId",columns="contentId",values="eventStrength").fillna(average)
         
-        latent_features=30
+        latent_features=15
         learning_rate=0.001
         epochs=100
         path="PQweights"
@@ -479,11 +480,22 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         instance=MatrixFactorization(ratings,latent_features,
                                      learning_rate,
-                                     epochs,path=path)
-        
-        
+                                     epochs,path=path)    
         instance.train()
-            
+        with open(path,"rb") as weights:
+            PQ=pickle.load(weights)
+        P,Q=PQ
+        matrix=np.array(P) @ np.transpose(Q) 
+        print(matrix.argsort())
+        print(ratings)
+        
+        # print(P.shape)
+        print(matrix.shape)
+        
+              
+        return Response({"Message":"success"})
+    
+       
     
     
     

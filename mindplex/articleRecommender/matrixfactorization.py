@@ -32,8 +32,8 @@ class MatrixFactorization:
         """ 
         Squared error loss
         """
-        error=np.square((self.ratings-tf.matmul(self.P,self.Q,transpose_b=True)))
-        l2_norm=tf.reduce_sum(np.square(self.P))+tf.reduce_sum(np.square(self.Q))
+        error=(self.ratings-tf.matmul(self.P,self.Q,transpose_b=True))
+        l2_norm=tf.reduce_sum(self.P**2)+tf.reduce_sum(self.Q**2)
         final_loss=tf.reduce_sum(tf.boolean_mask(error,self.mask))+self.l2_regularizer*l2_norm
         return final_loss
      
@@ -41,12 +41,8 @@ class MatrixFactorization:
         with tf.GradientTape() as tape:
             tape.watch([self.P,self.Q])
             self.current_loss=self.loss()
-            print("\nloss:\n",self.current_loss)
-            # print(self.P,self.Q)
             
             grad_V,grad_U=tape.gradient(self.current_loss,[self.P,self.Q])
-            print("\ngrad_v:\n",grad_V)
-            print("grad_U:\n",grad_U)
             
             self.P.assign_sub(self.learning_rate*grad_V)
             self.Q.assign_sub(self.learning_rate*grad_U)
