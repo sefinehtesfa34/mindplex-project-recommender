@@ -9,6 +9,7 @@ from scipy import rand
 from sympy import Q
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
+from articleRecommender.matrixfactorization import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
 
@@ -273,8 +274,9 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
         interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
         
         interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        
         interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
-
+        
         collaborative=CollaborativeFiltering(interactions_df,userId=userId)
         recommended_items=collaborative.recommended_ids
         recommended_queryset=Article.objects.filter(contentId__in=recommended_items)
@@ -296,8 +298,6 @@ class LocationBasedRecommenderUsingCF(APIView,PageNumberPagination):
                 return Response(status=status.HTTP_404_NOT_FOUND)
                 
             interactions=Interactions.objects.filter(location=location)
-            print(interactions)
-            
             interactions_df=read_frame(interactions,
                             fieldnames=[
                                 "userId",
@@ -450,10 +450,35 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         return self.get_paginated_response(serializer.data)
 class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
-        
         super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+    def get(self,request,userId):
+        interactions=Interactions.objects.all()
+        interactions_df=read_frame(interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
         
-    
+        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
+        interactions_df=interactions_df.iloc[1:,:]
+        
+        average=interactions_df["eventStrength"].mean()
+        ratings=interactions_df.pivot_table(index="userId",columns="contentId",values="eventStrength").fillna(average)
+        
+        latent_features=30
+        learning_rate=0.001
+        epochs=100
+        path="PQweights"
+        instance=MatrixFactorization(ratings,latent_features,
+                                     learning_rate,
+                                     epochs,path=path)
+        instance.train()
+            
     
     
     

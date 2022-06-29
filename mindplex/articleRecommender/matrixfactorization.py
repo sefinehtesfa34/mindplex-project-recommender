@@ -47,7 +47,7 @@ class MatrixFactorization:
             if self.current_loss<self.tolerable_loss:
                 break 
         # Save the model here
-        #self.saveModel()
+        self.saveModel()
     def saveModel(self):
         with open(self.path,"wb") as file:
             pickle.dump([self.P,self.Q],file)
