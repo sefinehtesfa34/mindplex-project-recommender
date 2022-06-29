@@ -1,8 +1,10 @@
 import pickle
+import os 
 import tensorflow as tf  
 import numpy as np 
 import warnings 
 warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class MatrixFactorization:
     def __init__(self,
                  ratings,
@@ -25,6 +27,7 @@ class MatrixFactorization:
         self.Q=tf.Variable(self.weight_initializer((self.num_items,self.latent_features)))
         self.epochs=epochs
         self.l2_regularizer=l2_regularizer
+        
     def loss(self):
         """ 
         Squared error loss
@@ -38,7 +41,13 @@ class MatrixFactorization:
         with tf.GradientTape() as tape:
             tape.watch([self.P,self.Q])
             self.current_loss=self.loss()
+            print("\nloss:\n",self.current_loss)
+            # print(self.P,self.Q)
+            
             grad_V,grad_U=tape.gradient(self.current_loss,[self.P,self.Q])
+            print("\ngrad_v:\n",grad_V)
+            print("grad_U:\n",grad_U)
+            
             self.P.assign_sub(self.learning_rate*grad_V)
             self.Q.assign_sub(self.learning_rate*grad_U)
     def train(self):

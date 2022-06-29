@@ -474,9 +474,14 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         learning_rate=0.001
         epochs=100
         path="PQweights"
+        print(ratings)
+        
+        
         instance=MatrixFactorization(ratings,latent_features,
                                      learning_rate,
                                      epochs,path=path)
+        
+        
         instance.train()
             
     
