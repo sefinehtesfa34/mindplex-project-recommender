@@ -92,7 +92,7 @@ model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
 cached_train = train.shuffle(10).batch(5).cache()
 cached_test = test.batch(5).cache()
 model.fit(cached_train, epochs=3)
-
+model.evaluate(cached_test, return_dict=True)
 
 
 
