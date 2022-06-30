@@ -14,6 +14,9 @@ class BasicRanking:
         pass
     def findUniqueItems(self):
         pass 
-     
+class RankingModel(tf.keras.layers.Model):
+    pass
+ 
+
     
     
