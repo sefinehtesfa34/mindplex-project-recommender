@@ -1,6 +1,8 @@
 import pandas as pd 
 import numpy as np 
 import tensorflow as tf 
+import tensorflow_recommenders as tfrs 
+from typing import Dict,Text
 class BasicRanking:
     def __init__(self,data:pd.DataFrame) -> None:
         self.data=data
@@ -16,6 +18,10 @@ class BasicRanking:
         pass
 unique_user_ids=None
 unique_contentIds=None
+task =  tfrs.tasks.Ranking(
+        loss = tf.keras.losses.MeanSquaredError(),
+        metrics=[tf.keras.metrics.RootMeanSquaredError()]
+        )
 
 class RankingModel(tf.keras.layers.Model):
     def __init__(self) -> None:
@@ -54,4 +60,20 @@ class RankingModel(tf.keras.layers.Model):
 
 
     
-    
+class RatingsBaseModel(tfrs.models.Model):
+  def __init__(self):
+    super().__init__()
+    self.ranking_model: tf.keras.Model = RankingModel()
+    self.task: tf.keras.layers.Layer = task
+
+  def call(self, features: Dict[str, tf.Tensor]) -> tf.Tensor:
+    return self.ranking_model(
+        (features["userId"], features["contentId"]))
+
+  def compute_loss(self, features: Dict[Text, tf.Tensor], training=False) -> tf.Tensor:
+    labels = features.pop("rating")
+    rating_predictions = self(features)
+
+    # The task computes the loss and the metrics.
+    return self.task(labels=labels, predictions=rating_predictions)
+
