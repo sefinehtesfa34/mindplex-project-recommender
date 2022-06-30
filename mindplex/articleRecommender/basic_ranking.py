@@ -89,6 +89,9 @@ class RatingsBaseModel(tfrs.models.Model):
 model = RatingsBaseModel()
 model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
 
+cached_train = train.shuffle(100_000).batch(8192).cache()
+cached_test = test.batch(4096).cache()
+
 
 
 
