@@ -475,7 +475,6 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         learning_rate=0.001
         epochs=100
         path="PQweights"
-        print(ratings)
         
         
         instance=MatrixFactorization(ratings,latent_features,
@@ -486,14 +485,22 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
             PQ=pickle.load(weights)
         P,Q=PQ
         matrix=np.array(P) @ np.transpose(Q) 
-        print(matrix.argsort())
-        print(ratings)
+        argsorted=matrix.argsort()
+        userIds=ratings.index.tolist()
+        index=userIds.index(userId)
         
-        # print(P.shape)
-        print(matrix.shape)
+        recommended_indeces=set(argsorted[index].tolist()[-11:]) 
         
-              
-        return Response({"Message":"success"})
+        top_10_similar_users=[]
+        for index,userId in enumerate(ratings.index):
+            if index in recommended_indeces:
+                top_10_similar_users.append(userId)
+            if len(top_10_similar_users)==10:
+                break 
+        
+        
+        
+        return Response({"Message":f"{top_10_similar_users}"})
     
        
     
