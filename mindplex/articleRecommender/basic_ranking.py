@@ -16,6 +16,15 @@ class BasicRanking:
         pass
     def findUniqueItems(self):
         pass
+
+
+
+tf.random.set_seed(42)
+ratings=None
+shuffled = ratings.shuffle(10, seed=42, reshuffle_each_iteration=False)
+train = shuffled.take(80)
+test = shuffled.skip(80).take(20)
+
 unique_user_ids=None
 unique_contentIds=None
 task =  tfrs.tasks.Ranking(
@@ -79,7 +88,6 @@ class RatingsBaseModel(tfrs.models.Model):
 
 model = RatingsBaseModel()
 model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
-
 
 
 
