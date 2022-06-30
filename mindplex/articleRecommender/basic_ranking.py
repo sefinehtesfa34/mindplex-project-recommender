@@ -77,3 +77,11 @@ class RatingsBaseModel(tfrs.models.Model):
     # The task computes the loss and the metrics.
     return self.task(labels=labels, predictions=rating_predictions)
 
+model = RatingsBaseModel()
+model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
+
+
+
+
+
+
