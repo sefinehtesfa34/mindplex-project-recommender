@@ -1,10 +1,21 @@
 import pandas as pd
 import tensorflow as tf 
-ratings:pd.DataFrame
-ratings=tf.data.Dataset.from_tensor_slices(ratings.to_dict("list"))
-def func(ds):
+class ListofRatings:
+  def __init__(self,ratings) -> None:
+    self.list_of_dicts=list(ratings.apply(self.func).as_numpy_iterator())
+  def func(self,ds):
     return ds.filter(lambda x:x.get("userId",None)!=None)
-list_of_dicts=list(ratings.apply(func).as_numpy_iterator())
+
+  def returnListOfRatings(self):
+    return self.list_of_dicts
+  
+   
+
+
+
+
+
+
 # e.g [
 #   {
 #    userId:    b'17364785',
@@ -23,7 +34,7 @@ list_of_dicts=list(ratings.apply(func).as_numpy_iterator())
 # 
 '''
 This is the output for the list(ratings.apply(func).as_numpy_iterator())
-'''     
+     
 [{'userId': b'-8845298781299428018',
   'contentId': b'-7292285110016212249',
   'rating': 3},
@@ -325,3 +336,4 @@ This is the output for the list(ratings.apply(func).as_numpy_iterator())
   'contentId': b'-2826566343807132236',
   'rating': 4}]
 
+"""
