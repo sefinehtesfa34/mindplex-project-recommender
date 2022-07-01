@@ -6,6 +6,9 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from scipy import rand
+from sympy import Q
+from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.matrixfactorization import MatrixFactorization
@@ -330,6 +333,7 @@ class LBRUsingCB(APIView,PageNumberPagination):
         except Interactions.DoesNotExist:
             return None 
     
+    
     def get(self,request,userId,format=None):
         
         user_interact_contentId=self.get_object(userId)
@@ -502,11 +506,40 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
        
     
     
+class RankingModelView(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
     
-    
-    
-    
-    
+        
+        self.eventStrength=eventStrength
+        
+    def get_object(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+        
+    def get(self,request,userId,format=None):
+        self.get_object(userId)
+        queryset=Interactions.objects.all()
+        
+        interactions_df=read_frame(
+                        queryset,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",                    
+                            ]
+                        )
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"rating","contentId__contentId":"contentId"})
+        ratings=interactions_df.iloc[1:,:]
+        interactions_df["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
+
+        ranking = BasicRanking(ratings)
+        unique_user_ids=ranking.unique_userIds
+        unique_content_ids=ranking.unique_contentIds
+        
     
     
     
