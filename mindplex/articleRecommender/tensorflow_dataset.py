@@ -32,7 +32,7 @@ class ListofRatings:
 # 
 # 
 # 
-'''
+"""
 This is the output for the list(ratings.apply(func).as_numpy_iterator())
      
 [{'userId': b'-8845298781299428018',
