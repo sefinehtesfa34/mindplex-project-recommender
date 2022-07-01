@@ -42,7 +42,7 @@ task =  tfrs.tasks.Ranking(
 
 class RankingModel(tf.keras.Model):
       
-      def __init__(self):
+      def __init__(self,unique_user_ids,unique_content_ids):
         super().__init__()
         embedding_dimension = 32
         # Compute embeddings for users.
