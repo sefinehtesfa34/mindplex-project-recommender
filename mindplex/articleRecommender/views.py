@@ -8,12 +8,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from scipy import rand
 from sympy import Q
-from articleRecommender.basic_ranking import BasicRanking, RatingsBaseModel
+from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.matrixfactorization import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
+from articleRecommender.ratings_base_model import RatingsBaseModel
 
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
@@ -534,8 +535,8 @@ class RankingModelView(APIView,PageNumberPagination):
                         )
         interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"rating","contentId__contentId":"contentId"})
         ratings=interactions_df.iloc[1:,:]
-        interactions_df["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
-
+        ratings["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
+        
         ranking = BasicRanking(ratings)
         
         total_ratings=ranking.total_ratings
@@ -561,8 +562,9 @@ class RankingModelView(APIView,PageNumberPagination):
         loaded = tf.saved_model.load("exported_model")
 
         # Make predictions
+        
         loaded({"userId": np.array(["8845298781299428018"]), "contentId": ["7292285110016212249"]}).numpy()
         # Loop over all items and filter the top 10 highest rating values
-
+        return Response({"message":"Success"})
     
     

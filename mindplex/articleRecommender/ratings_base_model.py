@@ -2,7 +2,8 @@ from typing import Dict, Text
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
-from articleRecommender.basic_ranking import RankingModel
+from articleRecommender.ranking_model import RankingModel
+
 task =  tfrs.tasks.Ranking(
         loss = tf.keras.losses.MeanSquaredError(),
         metrics=[tf.keras.metrics.RootMeanSquaredError()]

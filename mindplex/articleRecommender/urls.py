@@ -14,5 +14,6 @@ urlpatterns = [
     path("LBR-content-based/<str:userId>/",views.LBRUsingCB.as_view()),
     path("LBR-popular/<str:userId>/",views.LocationBasedRecommenderUsingPBR.as_view()),
     path("matrix/<str:userId>/",views.MatrixFactorizationView.as_view()),
+    path("ranking/<str:userId>/",views.RankingModelView.as_view())
     ]
 
