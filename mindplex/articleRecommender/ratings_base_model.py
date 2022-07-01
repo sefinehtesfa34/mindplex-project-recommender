@@ -1,3 +1,13 @@
+from typing import Dict, Text
+import tensorflow as tf
+import tensorflow_recommenders as tfrs
+
+from articleRecommender.basic_ranking import RankingModel
+task =  tfrs.tasks.Ranking(
+        loss = tf.keras.losses.MeanSquaredError(),
+        metrics=[tf.keras.metrics.RootMeanSquaredError()]
+        )
+ 
 class RatingsBaseModel(tfrs.models.Model):
   def __init__(self,unique_user_ids,unique_content_ids):
     super().__init__()
