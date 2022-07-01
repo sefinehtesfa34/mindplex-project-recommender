@@ -78,23 +78,23 @@ class RankingModel(tf.keras.Model):
         return self.ratings(tf.concat([user_embedding, item_embedding], axis=1))
       
 
-class RatingsBaseModel(tfrs.models.Model):
-  def __init__(self,unique_user_ids,unique_content_ids):
-    super().__init__()
-    self.ranking_model: tf.keras.Model = RankingModel(unique_user_ids=unique_user_ids,unique_content_ids=unique_content_ids)
-    self.task: tf.keras.layers.Layer = task
+# class RatingsBaseModel(tfrs.models.Model):
+#   def __init__(self,unique_user_ids,unique_content_ids):
+#     super().__init__()
+#     self.ranking_model: tf.keras.Model = RankingModel(unique_user_ids=unique_user_ids,unique_content_ids=unique_content_ids)
+#     self.task: tf.keras.layers.Layer = task
 
-  def call(self, features: Dict[str, tf.Tensor]) -> tf.Tensor:
-    return self.ranking_model(
-                (features["userId"], features["contentId"])
-                )  
-  def compute_loss(self, features: Dict[Text, tf.Tensor], training=False) -> tf.Tensor:
-    labels = features.pop("rating")
-    # call() is called using self(features) 
-    rating_predictions = self(features)
+#   def call(self, features: Dict[str, tf.Tensor]) -> tf.Tensor:
+#     return self.ranking_model(
+#                 (features["userId"], features["contentId"])
+#                 )  
+#   def compute_loss(self, features: Dict[Text, tf.Tensor], training=False) -> tf.Tensor:
+#     labels = features.pop("rating")
+#     # call() is called using self(features) 
+#     rating_predictions = self(features)
 
-    # The task computes the loss and the metrics.
-    return self.task(labels=labels, predictions=rating_predictions)
+#     # The task computes the loss and the metrics.
+#     return self.task(labels=labels, predictions=rating_predictions)
 
 
 
