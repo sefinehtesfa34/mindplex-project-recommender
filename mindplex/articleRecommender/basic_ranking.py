@@ -17,8 +17,6 @@ class BasicRanking:
     def findUniqueItems(self):
         pass
 
-
-
 tf.random.set_seed(42)
 ratings=None
 shuffled = ratings.shuffle(10, seed=42, reshuffle_each_iteration=False)

@@ -1,0 +1,77 @@
+0000000000000000000000000000000000000000 38effdfee09b9ed16021b5ac3031ff44be68abfe Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654120635 +0300	clone: from https://github.com/sefinehtesfa34/mindplex-project-recommender.git
+38effdfee09b9ed16021b5ac3031ff44be68abfe 38effdfee09b9ed16021b5ac3031ff44be68abfe Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654120670 +0300	checkout: moving from main to sefineh
+38effdfee09b9ed16021b5ac3031ff44be68abfe 7c64512be34d88d894b10a21122c99ba17c3a8bd Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654153906 +0300	commit: popularity and content based recommender
+7c64512be34d88d894b10a21122c99ba17c3a8bd 1a846fd9c2cfa658006fd09c288f3461b78cdff5 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654156564 +0300	commit: Completed
+1a846fd9c2cfa658006fd09c288f3461b78cdff5 73325d2499cfe2ed677faaf285bce166a8e90ef3 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654379347 +0300	commit: Collaborative filtering using Neural Net
+73325d2499cfe2ed677faaf285bce166a8e90ef3 6e6963108d8d0035119b0af11dad15ade8665923 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654380467 +0300	commit: paginaton and evaluations of collaborative filtering model
+6e6963108d8d0035119b0af11dad15ade8665923 38effdfee09b9ed16021b5ac3031ff44be68abfe Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654380596 +0300	checkout: moving from sefineh to main
+38effdfee09b9ed16021b5ac3031ff44be68abfe 6e6963108d8d0035119b0af11dad15ade8665923 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654380659 +0300	checkout: moving from main to sefineh
+6e6963108d8d0035119b0af11dad15ade8665923 20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381141 +0300	commit: file formating for better readability
+20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 38effdfee09b9ed16021b5ac3031ff44be68abfe Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381177 +0300	checkout: moving from sefineh to main
+38effdfee09b9ed16021b5ac3031ff44be68abfe 20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381184 +0300	merge sefineh: Fast-forward
+20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381295 +0300	checkout: moving from main to sefineh
+20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381312 +0300	checkout: moving from sefineh to main
+20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 755c2083863dd3f83b614c6bf0c1c5266979cef7 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381330 +0300	pull --tags origin main: Merge made by the 'recursive' strategy.
+755c2083863dd3f83b614c6bf0c1c5266979cef7 20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381477 +0300	checkout: moving from main to sefineh
+20d89dc7fe35aaa3e5fabf793bf9d0a7dde56147 bd88e05f0007b13de600d7e6f037f982dc4047a6 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381688 +0300	commit: make clean a code
+bd88e05f0007b13de600d7e6f037f982dc4047a6 cff283e2f0ec99631a068d261500b71b04829cf9 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381730 +0300	merge main: Merge made by the 'recursive' strategy.
+cff283e2f0ec99631a068d261500b71b04829cf9 755c2083863dd3f83b614c6bf0c1c5266979cef7 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381761 +0300	checkout: moving from sefineh to main
+755c2083863dd3f83b614c6bf0c1c5266979cef7 cff283e2f0ec99631a068d261500b71b04829cf9 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381766 +0300	merge sefineh: Fast-forward
+cff283e2f0ec99631a068d261500b71b04829cf9 212a7a836a654114d45372b7eb06d6b59cccdb05 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381928 +0300	commit: removed the debug output meaning like print statement
+212a7a836a654114d45372b7eb06d6b59cccdb05 cff283e2f0ec99631a068d261500b71b04829cf9 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654381949 +0300	checkout: moving from main to sefineh
+cff283e2f0ec99631a068d261500b71b04829cf9 3a32d06ac4df4d5a3811f4aa13ad0e703a6a138b Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654382080 +0300	commit: make clean a code like print statement
+3a32d06ac4df4d5a3811f4aa13ad0e703a6a138b 0c34c3236d304895d94cae4c16607aab834a5e7f Sefineh Tesfa <sefinehtesfa34@gmail.com> 1654382221 +0300	commit (merge): merged
+0c34c3236d304895d94cae4c16607aab834a5e7f 2f886a4f26a81a1b66b53189548355c258d5837b Sefineh Tesfa <sefinehtesfa34@gmail.com> 1655836359 +0300	commit: location based recommender
+2f886a4f26a81a1b66b53189548355c258d5837b d57d30885033c51a9141d1c22f71eab7025d32bb Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656089712 +0300	commit: location based recommender model is added
+d57d30885033c51a9141d1c22f71eab7025d32bb 1fb8094ee51bf86aac2b0656835ff042f0f23e32 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656089870 +0300	commit: locatioon based recommender
+1fb8094ee51bf86aac2b0656835ff042f0f23e32 1fb8094ee51bf86aac2b0656835ff042f0f23e32 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656089904 +0300	checkout: moving from sefineh to sefineh
+1fb8094ee51bf86aac2b0656835ff042f0f23e32 af26820e184b6390d0bbe6694247c18555f3eeca Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656092436 +0300	commit: content based value error is fixed
+af26820e184b6390d0bbe6694247c18555f3eeca 0c34c3236d304895d94cae4c16607aab834a5e7f Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105064 +0300	reset: moving to HEAD~4
+0c34c3236d304895d94cae4c16607aab834a5e7f 3a32d06ac4df4d5a3811f4aa13ad0e703a6a138b Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105121 +0300	reset: moving to HEAD~1
+3a32d06ac4df4d5a3811f4aa13ad0e703a6a138b bd88e05f0007b13de600d7e6f037f982dc4047a6 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105142 +0300	reset: moving to HEAD~2
+bd88e05f0007b13de600d7e6f037f982dc4047a6 1a846fd9c2cfa658006fd09c288f3461b78cdff5 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105162 +0300	reset: moving to HEAD~4
+1a846fd9c2cfa658006fd09c288f3461b78cdff5 7c64512be34d88d894b10a21122c99ba17c3a8bd Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105216 +0300	reset: moving to HEAD~1
+7c64512be34d88d894b10a21122c99ba17c3a8bd 0c34c3236d304895d94cae4c16607aab834a5e7f Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105280 +0300	pull: Fast-forward
+0c34c3236d304895d94cae4c16607aab834a5e7f adcdc7d8d0161fbc90c998ca3461c53396891215 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656105742 +0300	commit: I am going to add Location based recommender
+adcdc7d8d0161fbc90c998ca3461c53396891215 1ee3fce92633847a886c28f72ae869301e338c13 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656106303 +0300	commit: I made three models for location recommnder system
+1ee3fce92633847a886c28f72ae869301e338c13 212a7a836a654114d45372b7eb06d6b59cccdb05 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656106414 +0300	checkout: moving from sefineh to main
+212a7a836a654114d45372b7eb06d6b59cccdb05 1ee3fce92633847a886c28f72ae869301e338c13 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656106550 +0300	merge sefineh: Fast-forward
+1ee3fce92633847a886c28f72ae869301e338c13 1ee3fce92633847a886c28f72ae869301e338c13 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656106661 +0300	checkout: moving from main to sefineh
+1ee3fce92633847a886c28f72ae869301e338c13 391f6a4cbd1542891f4123d08b580b5245c3cb2e Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656141560 +0300	commit: interactions.csv file is deleted and the better version file is added
+391f6a4cbd1542891f4123d08b580b5245c3cb2e b411b906a54119785ef84cc67b44dc331f82614e Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656141652 +0300	commit: best_interactions.csv is replaced by best_interact.csv file which is the updated version
+b411b906a54119785ef84cc67b44dc331f82614e 1ee3fce92633847a886c28f72ae869301e338c13 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656141719 +0300	checkout: moving from sefineh to main
+1ee3fce92633847a886c28f72ae869301e338c13 b411b906a54119785ef84cc67b44dc331f82614e Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656141731 +0300	merge sefineh: Fast-forward
+b411b906a54119785ef84cc67b44dc331f82614e 9c7a1095b7275e4a565b3ab3cdfcb80071702cc5 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656270610 +0300	commit: removed unnecessary imports
+9c7a1095b7275e4a565b3ab3cdfcb80071702cc5 30996f69740df018d525884b2e603dcc493f11ce Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656270786 +0300	commit: clean codes
+30996f69740df018d525884b2e603dcc493f11ce e94c053b9c5c6264f9c199527224a12d44a09860 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656270880 +0300	commit: clean unncessary commented codes
+e94c053b9c5c6264f9c199527224a12d44a09860 b411b906a54119785ef84cc67b44dc331f82614e Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656270935 +0300	checkout: moving from main to sefineh
+b411b906a54119785ef84cc67b44dc331f82614e 6176487d90e0ae7c3ad7eccdfcf8d91baf457763 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656271443 +0300	commit: remmoved redundent code inside preprocessing file
+6176487d90e0ae7c3ad7eccdfcf8d91baf457763 2e30173e525766c799b7626772f597e5b240e4a1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656311421 +0300	commit: added metrics as accuracy in collaborative filtering model
+2e30173e525766c799b7626772f597e5b240e4a1 50e62d7daa88dc0a68dde529a601bfbc229208c1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656353596 +0300	commit: matrix factorization
+50e62d7daa88dc0a68dde529a601bfbc229208c1 c568888c95bede636be4fe0e45293eac64634750 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656353653 +0300	commit: declare matrix factorization class
+c568888c95bede636be4fe0e45293eac64634750 b77848dc589ad0200da6547844897e40cd2b65ae Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656355462 +0300	commit: low level matrix factorization using tensorflow
+b77848dc589ad0200da6547844897e40cd2b65ae 00848142d38f86ee9f085335fde343f3a3279fce Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656366874 +0300	commit: changed the concatination to dot product to make matrix factorizations
+00848142d38f86ee9f085335fde343f3a3279fce 79f0e6d4ba3152806c0b16e21086ecbf7c672b00 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656367767 +0300	commit: matrix factorization using Neural Network
+79f0e6d4ba3152806c0b16e21086ecbf7c672b00 6447e9b0f4d95b65ba40d6eb9eabfaadfe4a37c2 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656368390 +0300	commit: tasks for relearn models
+6447e9b0f4d95b65ba40d6eb9eabfaadfe4a37c2 a1cb448daf873c748a0f645f4f20a491593e696d Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656368435 +0300	commit: added celery file
+a1cb448daf873c748a0f645f4f20a491593e696d d5a15c1930b6e0f65324f2dc5f46967b9428ade1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656368581 +0300	commit: docker file updated
+d5a15c1930b6e0f65324f2dc5f46967b9428ade1 2db2b02b2d15b026b20b75939f0c5d7b8ff8161b Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656368612 +0300	commit: docker compose updated
+2db2b02b2d15b026b20b75939f0c5d7b8ff8161b 853afd9ed27ed93935d65fd077f988b4ed9c7988 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656445959 +0300	commit: code reusability in view file
+853afd9ed27ed93935d65fd077f988b4ed9c7988 eb8205b398a3a41490399e28277fd3032d4452db Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656445993 +0300	commit: matrix factorization view added
+eb8205b398a3a41490399e28277fd3032d4452db 55d82b1abbec20745dd370ceadd4d47dc21e669c Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656524737 +0300	commit: make pivote_table rather than pivot due to duplicate index entries
+55d82b1abbec20745dd370ceadd4d47dc21e669c c87804702c0f37de61d8122a11d1923cebc6c158 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656525699 +0300	commit: debug the order of executions
+c87804702c0f37de61d8122a11d1923cebc6c158 4cd888aef1b60a7c0a25f16b341af09b2918f5eb Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656527416 +0300	commit: disable tensorflow warnings using os module
+4cd888aef1b60a7c0a25f16b341af09b2918f5eb 6310937091e411e09b036cdefcf3dc475e533ae1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656531951 +0300	commit: make matrix factorization and save the weights of Q and P
+6310937091e411e09b036cdefcf3dc475e533ae1 4054968791d21b243a72b3b3008e5293a48aa0c1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656618905 +0300	commit: tensorflow dataset
+4054968791d21b243a72b3b3008e5293a48aa0c1 034d3addecab6764acc670dfaae72fb2438f80ca Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656618966 +0300	commit: tensorflow ranking model
+034d3addecab6764acc670dfaae72fb2438f80ca 4d2c0ade4f5fb312b1ab96534573187a057116af Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656619345 +0300	commit: Basic ranking
+4d2c0ade4f5fb312b1ab96534573187a057116af 898be3f7af7b3d82859a61cd090253fb2d8080bb Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656619727 +0300	commit: ranking model
+898be3f7af7b3d82859a61cd090253fb2d8080bb 3ed51dfecd62d38c94c7133ef8d7cd836fd8ebc5 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656620312 +0300	commit: make rating predictor class, ranking model
+3ed51dfecd62d38c94c7133ef8d7cd836fd8ebc5 6a975dd2a58bebcf7632db92f54a0597e6679156 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656620818 +0300	commit: Defined the base model
+6a975dd2a58bebcf7632db92f54a0597e6679156 515706aad7752120b2ffd6a1cfa5542cb701a1b0 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656620896 +0300	commit: compile the model
+515706aad7752120b2ffd6a1cfa5542cb701a1b0 3795508b4b4d6c6483e93438f9c9d4320df507f0 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656621037 +0300	commit: train and test splited data
+3795508b4b4d6c6483e93438f9c9d4320df507f0 58dac591d54bf5bbf62bea309613b12f483ec58d Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656621099 +0300	commit: cached train and test data
+58dac591d54bf5bbf62bea309613b12f483ec58d 5fc53ad3c1fc0559e687350e48038254f9dc67a1 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656621139 +0300	commit: change the batch size
+5fc53ad3c1fc0559e687350e48038254f9dc67a1 79bfec1a503c02bd478ed826cb1f9dedf20b9f81 Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656621164 +0300	commit: train the model
+79bfec1a503c02bd478ed826cb1f9dedf20b9f81 25a8c927d1e3f408d983c1f590adc7e203cad72b Sefineh Tesfa <sefinehtesfa34@gmail.com> 1656621181 +0300	commit: evalute the model
+                                                                                                                                                                          
