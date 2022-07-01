@@ -1,4 +1,6 @@
+import pickle
 from typing import Any
+import numpy as np
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 from rest_framework.views import APIView
@@ -6,12 +8,29 @@ from rest_framework.response import Response
 from rest_framework import status
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
+from articleRecommender.matrixfactorization import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
 
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
 
+
+eventStrength={
+            "LIKE":1.0,
+            "VIEW":5.0,
+            "FOLLOW":2.0,
+            "UNFOLLOW":2.0,
+            "DISLIKE":1.0,
+            "REACT-POSITIVE":1.5,
+            "REACT-NEGATIVE":1.5,
+            "COMMENT-BEST-POSITIVE":3.0,
+            "COMMENT-AVERAGE-POSITIVE":2.5,
+            "COMMENT-GOOD-POSITIVE":2.0,
+            "COMMENT-BEST-NEGATIVE":3.0,
+            "COMMENT-AVERAGE-NEGATIVE":2.5,
+            "COMMENT-GOOD-NEGATIVE":2.0,    
+            }
 
 class ArticleView(APIView,PageNumberPagination):
     def get_object(self,authorId):
@@ -123,22 +142,7 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -200,21 +204,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         
@@ -270,21 +260,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
 class CollaborativeFilteringView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
     def get(self,request,userId):
         interactions=Interactions.objects.all()
         interactions_df=read_frame(interactions,
@@ -297,8 +273,9 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
         interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
         
         interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        
         interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
-
+        
         collaborative=CollaborativeFiltering(interactions_df,userId=userId)
         recommended_items=collaborative.recommended_ids
         recommended_queryset=Article.objects.filter(contentId__in=recommended_items)
@@ -310,21 +287,8 @@ class CollaborativeFilteringView(APIView,PageNumberPagination):
 class LocationBasedRecommenderUsingCF(APIView,PageNumberPagination):
         def __init__(self, **kwargs: Any) -> None:
             super().__init__(**kwargs)
-            self.eventStrength={
-                    "LIKE":1.0,
-                "VIEW":5.0,
-                "FOLLOW":2.0,
-                "UNFOLLOW":2.0,
-                "DISLIKE":1.0,
-                "REACT-POSITIVE":1.5,
-                "REACT-NEGATIVE":1.5,
-                "COMMENT-BEST-POSITIVE":3.0,
-                "COMMENT-AVERAGE-POSITIVE":2.5,
-                "COMMENT-GOOD-POSITIVE":2.0,
-                "COMMENT-BEST-NEGATIVE":3.0,
-                "COMMENT-AVERAGE-NEGATIVE":2.5,
-                "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+            self.eventStrength=eventStrength
+            
         def get(self,request,userId):
             user_interactions=Interactions.objects.filter(userId=userId)
             serializer=InteractionsSerializer(user_interactions,many=True)
@@ -333,8 +297,6 @@ class LocationBasedRecommenderUsingCF(APIView,PageNumberPagination):
                 return Response(status=status.HTTP_404_NOT_FOUND)
                 
             interactions=Interactions.objects.filter(location=location)
-            print(interactions)
-            
             interactions_df=read_frame(interactions,
                             fieldnames=[
                                 "userId",
@@ -358,21 +320,7 @@ class LBRUsingCB(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
     
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         
@@ -423,7 +371,8 @@ class LBRUsingCB(APIView,PageNumberPagination):
         
         recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
         
-        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
+        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)
+            
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
         
@@ -433,21 +382,7 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         super().__init__(**kwargs)
     
         
-        self.eventStrength={
-            "LIKE":1.0,
-            "VIEW":5.0,
-            "FOLLOW":2.0,
-            "UNFOLLOW":2.0,
-            "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
-            "REACT-NEGATIVE":1.5,
-            "COMMENT-BEST-POSITIVE":3.0,
-            "COMMENT-AVERAGE-POSITIVE":2.5,
-            "COMMENT-GOOD-POSITIVE":2.0,
-            "COMMENT-BEST-NEGATIVE":3.0,
-            "COMMENT-AVERAGE-NEGATIVE":2.5,
-            "COMMENT-GOOD-NEGATIVE":2.0,    
-            }
+        self.eventStrength=eventStrength
         
     def get_object(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -511,8 +446,60 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         
 
         return self.get_paginated_response(serializer.data)
-
+class MatrixFactorizationView(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+    def get(self,request,userId):
+        interactions=Interactions.objects.all()
+        interactions_df=read_frame(interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
+        
+        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
+        interactions_df=interactions_df.iloc[1:,:]
+        
+        average=interactions_df["eventStrength"].mean()
+        ratings=interactions_df.pivot_table(index="userId",columns="contentId",values="eventStrength").fillna(average)
+        
+        latent_features=15
+        learning_rate=0.001
+        epochs=100
+        path="PQweights"
+        
+        
+        instance=MatrixFactorization(ratings,latent_features,
+                                     learning_rate,
+                                     epochs,path=path)    
+        instance.train()
+        with open(path,"rb") as weights:
+            PQ=pickle.load(weights)
+        P,Q=PQ
+        matrix=np.array(P) @ np.transpose(Q) 
+        argsorted=matrix.argsort()
+        userIds=ratings.index.tolist()
+        index=userIds.index(userId)
+        
+        recommended_indeces=set(argsorted[index].tolist()[-11:]) 
+        
+        top_10_similar_users=[]
+        for index,userId in enumerate(ratings.index):
+            if index in recommended_indeces:
+                top_10_similar_users.append(userId)
+            if len(top_10_similar_users)==10:
+                break 
+        
+        
+        
+        return Response({"Message":f"{top_10_similar_users}"})
     
+       
     
     
     

@@ -1,22 +1,67 @@
-version: "3.9"
+version: "3.0"
+
 services:
   db:
     image: postgres
-    environment:
-      POSTGRES_USER: sefineh
-      POSTGRES_DB: sefineh 
-      POSTGRES_PASS: Sefineh@2844
-    volumes:
-      - pgdata:/var/lib/posgresql/data
-  recommender:
-    build:
-      context: .
     ports:
-      - "8000:8000"
+      - '5435:5432'
     volumes:
-      - ./recommender:/recommender
-    command: python manage.py runserver 0.0.0.0:8000
+      - pgdata:/var/lib/postgresql/data  
+    env_file:
+      - ./.env
+    
+  recommender:
+    build: .
+    volumes:
+      - .:/snetrecommender:rw
+    command: >
+      bash -c
+        "python manage.py migrate &&
+         python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - ./.env
+
+    ports:
+      - "8020:8000"
     depends_on:
       - db
+      - memcached
+  redis:
+    image: redis:alpine
+  celery:
+    build: .
+    volumes:
+      - .:/snetrecommender:rw
+    command: celery -A snetrecommender worker --loglevel=debug
+    env_file:
+      - ./.env
+    depends_on:
+       - redis
+  celery-beat:
+    build: .
+    volumes:
+      - .:/snetrecommender
+    command: >
+       bash -c
+         "celery -A snetrecommender beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    env_file:
+      - ./.env
+    depends_on:
+       - celery
+       - redis
+       - db
+       - memcached
+  memcached:
+    image: memcached
+    volumes:
+      - .:/snetrecommender
+    ports:
+       - "11213:11211"
+    command: memcached -vv
+
+
 volumes:
   pgdata:
+
+
+
