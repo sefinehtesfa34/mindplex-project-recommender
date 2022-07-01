@@ -23,7 +23,10 @@ shuffled = ratings.shuffle(10, seed=42, reshuffle_each_iteration=False)
 train = shuffled.take(80)
 test = shuffled.skip(80).take(20)
 
+
+
 unique_user_ids=None
+
 unique_contentIds=None
 task =  tfrs.tasks.Ranking(
         loss = tf.keras.losses.MeanSquaredError(),
