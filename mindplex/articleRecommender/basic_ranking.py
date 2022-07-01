@@ -6,10 +6,6 @@ from typing import Dict,Text
 from articleRecommender.tensorflow_dataset import ListofRatings
 
 
-unique_user_ids=None
-unique_content_ids=None
-total_ratings =None
-
 class BasicRanking:
     def __init__(self,data:pd.DataFrame) -> None:
         self.data=data
@@ -24,10 +20,6 @@ class BasicRanking:
     def unique_userIds_and_contentIds(self):
         unique_userIds=[]
         unique_contentIds=[] 
-        global unique_content_ids
-        global unique_user_ids
-        global total_ratings
-        
         ratings=self.createTfds()
         instance=ListofRatings(ratings)
         ratings=instance.returnListOfRatings()
@@ -36,17 +28,12 @@ class BasicRanking:
             unique_userIds.append(rating["userId"].decode("utf-8"))
             unique_contentIds.append(rating["contentId"].decode("utf-8"))
         
-        unique_content_ids=np.unique(unique_contentIds)
-        unique_user_ids =np.unique(unique_userIds)
-                
-        total_ratings=self.createTfds() 
+        self.unique_content_ids=np.unique(unique_contentIds)
+        self.unique_user_ids =np.unique(unique_userIds)        
+        self.total_ratings=self.createTfds() 
 
 
 
-tf.random.set_seed(42)
-shuffled = total_ratings.shuffle(10, seed=42, reshuffle_each_iteration=False)
-train = shuffled.take(80)
-test = shuffled.skip(80).take(20)
 
 task =  tfrs.tasks.Ranking(
         loss = tf.keras.losses.MeanSquaredError(),

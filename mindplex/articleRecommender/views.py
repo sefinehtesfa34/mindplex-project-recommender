@@ -537,17 +537,27 @@ class RankingModelView(APIView,PageNumberPagination):
         interactions_df["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
 
         ranking = BasicRanking(ratings)
-        model = RatingsBaseModel()
-        model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
+        # model = RatingsBaseModel()
+        # model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
+        total_ratings=ranking.total_ratings
+        unique_user_ids=ranking.unique_user_ids
+        unique_content_ids=ranking.unique_content_ids
+        
+        tf.random.set_seed(42)
+        shuffled = total_ratings.shuffle(10, seed=42, reshuffle_each_iteration=False)
+        train = shuffled.take(80)
+        test = shuffled.skip(80).take(20)
+
+        
         
         cached_train = train.shuffle(10).batch(5).cache()
         cached_test = test.batch(5).cache()
 
-        model.fit(cached_train, epochs=3)
+        # model.fit(cached_train, epochs=3)
 
-        model.evaluate(cached_test, return_dict=True)
+        # model.evaluate(cached_test, return_dict=True)
 
-        tf.saved_model.save(model, "exported_model")
+        # tf.saved_model.save(model, "exported_model")
 
             
 
