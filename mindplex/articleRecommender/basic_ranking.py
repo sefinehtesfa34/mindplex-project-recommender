@@ -120,8 +120,12 @@ model.fit(cached_train, epochs=3)
 
 model.evaluate(cached_test, return_dict=True)
 
-tf.saved_model.save(model, "export")
-loaded = tf.saved_model.load("export")
+tf.saved_model.save(model, "exported_model")
+
+      
+
+
+loaded = tf.saved_model.load("exported_model")
 
 # Make predictions
 loaded({"userId": np.array(["8845298781299428018"]), "contentId": ["7292285110016212249"]}).numpy()
