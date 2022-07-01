@@ -537,9 +537,6 @@ class RankingModelView(APIView,PageNumberPagination):
         interactions_df["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
 
         ranking = BasicRanking(ratings)
-        unique_user_ids=ranking.unique_userIds
-        unique_content_ids=ranking.unique_contentIds
         
-    
     
     
