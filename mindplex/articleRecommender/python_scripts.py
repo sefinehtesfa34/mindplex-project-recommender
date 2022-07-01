@@ -16,12 +16,6 @@ import numpy as np #
 # ...:         source=row[7],
 # ...:         timestamp=1.2*9,
 # ...:         title=row[3])
-
-df = pd.read_csv("interactions.csv")
-print(df.shape)
-print(df.columns)
-print(df.eventType.unique())
-
 # ['VIEW' 'FOLLOW' 'BOOKMARK' 'LIKE' 'COMMENT CREATED']
 # print(df.eventType.unique())
 
@@ -42,12 +36,11 @@ print(df.eventType.unique())
 # id_range=list(range(100))
 # df["contentId"]=np.random.choice(id_range,72312) #Because it is a foreing key field
 # pd.DataFrame.to_csv(df[:100],'interactions.csv',index=False)
-print(df.shape)
-print(df.columns)
-print(df.head())
+
+
 
 #interactions database script
-# In [20]: with open("interactions.csv") as interact:
+# In [20]: with open("best_interaction.csv") as interact:
 #     ...:     reader=csv.reader(interact)
 #     ...:     pk=1
 #     ...:     for index,row in enumerate(reader):
@@ -65,20 +58,3 @@ print(df.head())
 #     ...:         )
 #     ...: 
 #     ...: 
-# id
-# authorId
-# authorResidence
-# communtId
-# content
-# contentId
-# source
-# timestamp
-# title
-# {"userId"
-# "location"
-# "eventType" 
-# "contentId" 
-# "communityId"
-# "source" 
-# "timestamp"
-# } 
