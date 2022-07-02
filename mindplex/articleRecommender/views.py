@@ -536,7 +536,6 @@ class RankingModelView(APIView,PageNumberPagination):
         interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"rating","contentId__contentId":"contentId"})
         ratings=interactions_df.iloc[1:,:]
         ratings["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
-        all_content_ids=ratings[~ratings["contentId"].isin(self.excluded_article_set)]["contentId"]
         
         
         ranking = BasicRanking(ratings)
@@ -566,9 +565,13 @@ class RankingModelView(APIView,PageNumberPagination):
         # Make predictions
         
         # Loop over all items and filter the top 10 highest rating values
+        all_content_ids=np.unique(ratings[~ratings["contentId"].isin(self.excluded_article_set)]["contentId"])
+        
+        print(all_content_ids)
         predicted_ratings=[(loaded({"userId": np.array([userId]), "contentId": [contentId]}).numpy().tolist()[0],contentId) for contentId in all_content_ids]
         top_10_highest_rating_values=sorted(predicted_ratings)[-10:]
         print(top_10_highest_rating_values)
+        
         content_ids=[content_id[1] for content_id in top_10_highest_rating_values]
         recommended_articles=Article.objects.filter(contentId__in=content_ids)
         result=self.paginate_queryset(recommended_articles,request,view=self)
