@@ -567,7 +567,7 @@ class RankingModelView(APIView,PageNumberPagination):
         
         # Loop over all items and filter the top 10 highest rating values
         predicted_ratings=[(loaded({"userId": np.array([userId]), "contentId": [contentId]}).numpy().tolist()[0],contentId) for contentId in all_content_ids]
-        top_10_highest_rating_values=predicted_ratings.sort()[-10:]
+        top_10_highest_rating_values=sorted(predicted_ratings)[-10:]
         print(top_10_highest_rating_values)
         content_ids=[content_id[1] for content_id in top_10_highest_rating_values]
         recommended_articles=Article.objects.filter(contentId__in=content_ids)
