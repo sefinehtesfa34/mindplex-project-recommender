@@ -6,8 +6,6 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from scipy import rand
-from sympy import Q
 from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
@@ -19,6 +17,8 @@ from articleRecommender.ratings_base_model import RatingsBaseModel
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
 import tensorflow as tf
+import warnings
+warnings.filterwarnings("ignore")
 
 eventStrength={
             "LIKE":1.0,
@@ -567,7 +567,6 @@ class RankingModelView(APIView,PageNumberPagination):
         # Loop over all items and filter the top 10 highest rating values
         all_content_ids=np.unique(ratings[~ratings["contentId"].isin(self.excluded_article_set)]["contentId"])
         
-        print(all_content_ids)
         predicted_ratings=[(loaded({"userId": np.array([userId]), "contentId": [contentId]}).numpy().tolist()[0],contentId) for contentId in all_content_ids]
         top_10_highest_rating_values=sorted(predicted_ratings)[-10:]
         print(top_10_highest_rating_values)
