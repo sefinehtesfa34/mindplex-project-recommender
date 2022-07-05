@@ -457,27 +457,6 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
-    def preprocessor(self,interactions):
-    
-        interactions_df=read_frame(interactions,
-                        fieldnames=[
-                            "userId",
-                            "eventType",
-                            "contentId__contentId",
-                            
-                            ])
-        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
-        
-        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
-        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
-        interactions_df=interactions_df.iloc[1:,:]
-        average=interactions_df["eventStrength"].mean()
-        ratings=interactions_df.pivot_table(index="userId",
-                                            columns="contentId",
-                                            values="eventStrength")\
-                                            .fillna(average)
-        
-        return ratings
     
     def excludedArticles(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -492,7 +471,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         return mapping_index_to_user_ids,mapping_userId_to_index
     
     
-    def get(self,request,userId,train=False):
+    def get(self,request,userId):
         path="similarityIndexWeights"
         similarity_path="similarity"
         ratings_path="ratingsWeight"
@@ -517,9 +496,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         with open(similarity_path,"rb") as similarity_file:
             user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
         
-    
         mapping_index_to_user_ids,mapping_userId_to_index=self.mapper(ratings)
-        
         index=mapping_userId_to_index.get(userId,None)
         
         if index==None:
@@ -540,28 +517,14 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         
         
+        top_10_content_ids=user2user.top_10_content_ids_finder(
+                user_uninteracted_content_ids,
+                similar_user_ids,
+                mapping_userId_to_index,
+                userId,
+                user_to_user_similarity)
         
-        average_ratings={}
-        for content_id in user_uninteracted_content_ids:
-            total_rating=0
-            temp=0
-            for user_id in similar_user_ids:
-                rating=ratings.loc[user_id,content_id]
-                temp+=rating 
-                index1=mapping_userId_to_index[userId]
-                index2=mapping_userId_to_index[user_id]
-                
-                try:
-                    similarity_score=user_to_user_similarity[(index1,index2)]
-                except:
-                    similarity_score=user_to_user_similarity[(index2,index1)]
-                total_rating+=(rating*similarity_score)
-                
-                
-            weighted_average=total_rating/temp 
-            average_ratings[content_id]=weighted_average
-        top_10=sorted(average_ratings.items(),key=lambda x:x[1])[:10]
-        top_10_content_ids=[content_id for content_id,rating in top_10]
+        
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    

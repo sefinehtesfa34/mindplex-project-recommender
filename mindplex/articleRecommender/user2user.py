@@ -45,7 +45,7 @@ class User2UserBased:
                    similar_user_ids,
                    mapping_userId_to_index,
                    userId,
-                   user_to_user_similarity,
+                   user_to_user_similarity
                    ):
         average_ratings={}
         for content_id in user_uninteracted_content_ids:
