@@ -501,6 +501,8 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         user2user=User2UserBased(path)
         interactions=Interactions.objects.all()
         
+        
+        
         # relearn and train the model
         user2user.preprocessor(interactions,eventStrength)
         user2user.scheduler()
