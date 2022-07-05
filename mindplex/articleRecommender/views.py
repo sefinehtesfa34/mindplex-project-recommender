@@ -13,6 +13,7 @@ from articleRecommender.matrixfactorization import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
 from articleRecommender.ratings_base_model import RatingsBaseModel
+from articleRecommender.user2user import User2UserBased
 
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
@@ -466,59 +467,55 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def mapper(self,ratings):
         mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
         mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
-        return mapping_index_to_user_ids,mapping_index_to_user_ids
-    
-    def preprocessor(self,interactions):
-        
-        interactions_df=read_frame(interactions,
-                        fieldnames=[
-                            "userId",
-                            "eventType",
-                            "contentId__contentId",
-                            
-                            ])
-        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
-        
-        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
-        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
-        interactions_df=interactions_df.iloc[1:,:]
-        return interactions_df
+        return mapping_index_to_user_ids,mapping_userId_to_index
     
     
-    def get(self,request,userId):
-        self.excludedArticles(userId)
-        # latent_features=15
-        # learning_rate=0.001
-        # epochs=100
+    def get(self,request,userId,train=False):
+        if train:
+            interactions=Interactions.objects.all()
+            path="similarityWeights"
+            user2user=User2UserBased(path)
+            ratings=user2user.preprocessor(interactions)
+            user2user.scheduler(ratings,path)
+            return Response({"message":"model training"})
         
-        # interactions=Interactions.objects.all()
-        # interactions_df=self.preprocessor(interactions)
-        # average=interactions_df["eventStrength"].mean()
-        # ratings=interactions_df.pivot_table(index="userId",
-        #                                     columns="contentId",
-        #                                     values="eventStrength")\
-        #                                     .fillna(average)
+        else:
+            self.excludedArticles(userId)
+            # latent_features=15
+            # learning_rate=0.001
+            # epochs=100
+            
+            # interactions=Interactions.objects.all()
+            # interactions_df=self.preprocessor(interactions)
+            # average=interactions_df["eventStrength"].mean()
+            # ratings=interactions_df.pivot_table(index="userId",
+            #                                     columns="contentId",
+            #                                     values="eventStrength")\
+            #                                     .fillna(average)
+            
+            
+            # instance=MatrixFactorization(ratings,latent_features,
+            #                              learning_rate,
+            #                              epochs,path=path)    
+            # instance.train()
+            
+            path="similarityWeights"
+            similarity_path="similarity"
+            ratings_path="ratingsWeight"
+            
+            with open(ratings_path,"rb") as ratings_weight:
+                ratings=pickle.load(ratings_weight)
+            
+            with open(path,"rb") as weights:
+                user_similarity,item_similarity=pickle.load(weights) 
+            with open(similarity_path,"rb") as similarity_file:
+                user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+            
         
-        path="similarityWeights"
-        similarity_path="similarity"
-        ratings_path="ratingsWeight"
+        mapping_index_to_user_ids,mapping_userId_to_index=self.mapper(ratings)
         
-        with open(ratings_path,"rb") as ratings_weight:
-            ratings=pickle.load(ratings_weight)
-        
-        
-        mapping_userId_to_index=self.mapper(ratings)
-        mapping_index_to_user_ids=self.mapper(ratings)
-        
-        # instance=MatrixFactorization(ratings,latent_features,
-        #                              learning_rate,
-        #                              epochs,path=path)    
-        # instance.train()
-        
-        
-        with open(path,"rb") as weights:
-            user_similarity,item_similarity=pickle.load(weights) 
         index=mapping_userId_to_index.get(userId,None)
+        
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
         similar_users_index=user_similarity[index][:100]
@@ -536,8 +533,6 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
         
-        with open(similarity_path,"rb") as similarity_file:
-            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
         
         
         average_ratings={}
