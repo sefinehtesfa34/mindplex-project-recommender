@@ -455,6 +455,19 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
+        
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+        
+    def mapper(self,ratings):
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_user_ids,mapping_index_to_user_ids
+    
     def preprocessor(self,interactions):
         
         interactions_df=read_frame(interactions,
@@ -473,31 +486,34 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     
     
     def get(self,request,userId):
-        latent_features=15
-        learning_rate=0.001
-        epochs=100
+        self.excludedArticles(userId)
+        # latent_features=15
+        # learning_rate=0.001
+        # epochs=100
+        
+        # interactions=Interactions.objects.all()
+        # interactions_df=self.preprocessor(interactions)
+        # average=interactions_df["eventStrength"].mean()
+        # ratings=interactions_df.pivot_table(index="userId",
+        #                                     columns="contentId",
+        #                                     values="eventStrength")\
+        #                                     .fillna(average)
+        
         path="similarityWeights"
-        
-        interactions=Interactions.objects.all()
-        interactions_df=self.preprocessor(interactions)
-        average=interactions_df["eventStrength"].mean()
-        ratings=interactions_df.pivot_table(index="userId",
-                                            columns="contentId",
-                                            values="eventStrength")\
-                                            .fillna(average)
-        
+        similarity_path="similarity"
         ratings_path="ratingsWeight"
-        with open(ratings_path,"wb") as ratings_weight:
-            pickle.dump(ratings,ratings_weight)
+        
+        with open(ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
         
         
-        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
-        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        mapping_userId_to_index=self.mapper(ratings)
+        mapping_index_to_user_ids=self.mapper(ratings)
         
-        instance=MatrixFactorization(ratings,latent_features,
-                                     learning_rate,
-                                     epochs,path=path)    
-        instance.train()
+        # instance=MatrixFactorization(ratings,latent_features,
+        #                              learning_rate,
+        #                              epochs,path=path)    
+        # instance.train()
         
         
         with open(path,"rb") as weights:
@@ -510,23 +526,16 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         for index in similar_users_index:
             similar_user_ids.append(mapping_index_to_user_ids[index])
         
-        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
-        serializer=ContentIdSerializer(self.excluded_article,many=True)
-        self.excluded_article_set=set()
-        for dict in serializer.data:
-            self.excluded_article_set.add(list(dict.values())[0])
                 
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
-        
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        
         
         content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
-        similarity_path="similarity"
+        
         with open(similarity_path,"rb") as similarity_file:
             user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
         
@@ -551,7 +560,6 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
             weighted_average=total_rating/temp 
             average_ratings[content_id]=weighted_average
         print(average_ratings)        
-        
         top_10=sorted(average_ratings.items(),key=lambda x:x[1])[:10]
         top_10_content_ids=[content_id for content_id,rating in top_10]
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
