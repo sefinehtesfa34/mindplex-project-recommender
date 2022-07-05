@@ -78,15 +78,30 @@ class MatrixFactorization:
         
             
             
-            
+    #This function removes the redandunt cells of the similarity score
+    # For example similarity=cosine_similarity([[1,2,3,4,5],
+    #                                            [2,5,3,4,8],
+    #                                            [8,5,1,2,7],
+    #                                            [9,0,8,9,5]])
+    # The output would be Out[7]: 
+            # array([[1.        , 0.95580297, 0.72165664, 0.80003622],
+            #        [0.95580297, 1.        , 0.83140902, 0.68565262],
+            #        [0.72165664, 0.83140902, 1.        , 0.7020156 ],
+            #        [0.80003622, 0.68565262, 0.7020156 , 1.        ]])
+
+# Look the redandunt cells above 
+
+    
+     
     def optimalSimilarityWeightSaver(self,similarity_type):
         shape=similarity_type.shape
         visited=set()
         unique_similarity_ratings={}
+        
         for index1 in range(shape[0]):
             for index2 in range(shape[0]):
                 if (index1,index2) not in visited:
-                    unique_similarity_ratings[(index1,index2)]=self.user_similarity[index1][index2]
+                    unique_similarity_ratings[(index1,index2)]=similarity_type[index1][index2]
                     visited.add((index1,index2))
                     visited.add((index2,index1)) 
         return unique_similarity_ratings

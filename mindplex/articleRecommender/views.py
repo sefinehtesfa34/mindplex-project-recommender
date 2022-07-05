@@ -479,11 +479,11 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         self.excludedArticles(userId)
         user2user=User2UserBased(path)
         
-        # When we want to relearn the model, we have to uncomment those lines below.
+        # When we want to relearn the model, we have to uncomment these lines below.
         
-        # interactions=Interactions.objects.all()
-        # user2user.preprocessor(interactions,eventStrength)
-        # user2user.relearner()
+        interactions=Interactions.objects.all()
+        user2user.preprocessor(interactions,eventStrength)
+        user2user.relearner()
         
         
         with open(ratings_path,"rb") as ratings_weight:
