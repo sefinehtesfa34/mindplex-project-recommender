@@ -493,41 +493,29 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     
     
     def get(self,request,userId,train=False):
-        if train:
-            interactions=Interactions.objects.all()
-            path="similarityIndexWeights"
-            user2user=User2UserBased(path)
-            ratings=user2user.preprocessor(interactions)
-            user2user.scheduler(ratings,path)
-            return Response({"message":"model training"})
+        path="similarityIndexWeights"
+        similarity_path="similarity"
+        ratings_path="ratingsWeight"
         
-        else:
-            self.excludedArticles(userId)
-            latent_features=15
-            learning_rate=0.001
-            epochs=100
-            
-            path="similarityIndexWeights"
-            similarity_path="similarity"
-            ratings_path="ratingsWeight"
-            
-            interactions=Interactions.objects.all()
-            ratings=self.preprocessor(interactions)
-            instance=MatrixFactorization(ratings,latent_features,
-                                         learning_rate,
-                                         epochs,path=path)    
-            instance.train()
-            
-            with open(ratings_path,"rb") as ratings_weight:
-                ratings=pickle.load(ratings_weight)
-            
-            with open(path,"rb") as weights:
-                user_similarity,item_similarity=pickle.load(weights) 
-            
-            with open(similarity_path,"rb") as similarity_file:
-                user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
-            
+        self.excludedArticles(userId)
+        user2user=User2UserBased(path)
+        interactions=Interactions.objects.all()
         
+        # relearn and train the model
+        user2user.preprocessor(interactions,eventStrength)
+        user2user.scheduler()
+        # Load the weights and make prediction
+        
+        with open(ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+        
+        with open(path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        
+        with open(similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        
+    
         mapping_index_to_user_ids,mapping_userId_to_index=self.mapper(ratings)
         
         index=mapping_userId_to_index.get(userId,None)
@@ -570,7 +558,6 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
                 
             weighted_average=total_rating/temp 
             average_ratings[content_id]=weighted_average
-        print(average_ratings)        
         top_10=sorted(average_ratings.items(),key=lambda x:x[1])[:10]
         top_10_content_ids=[content_id for content_id,rating in top_10]
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
@@ -578,7 +565,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         serializer=ArticleSerializer(result,many=True)    
         
         return self.get_paginated_response(serializer.data)
-    
+        
        
 
     

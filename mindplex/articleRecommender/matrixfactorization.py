@@ -97,3 +97,10 @@ class MatrixFactorization:
     def itemSimilarity(self):
         return cosine_similarity(self.Q)
      
+     
+     
+     
+     
+     
+     
+     
