@@ -30,7 +30,7 @@ class User2UserBased:
         return ratings
     
     
-    def scheduler(self):
+    def relearner(self):
         latent_features=15
         learning_rate=0.001
         epochs=100

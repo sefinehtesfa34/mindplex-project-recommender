@@ -478,17 +478,13 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         self.excludedArticles(userId)
         user2user=User2UserBased(path)
+        
+        # When we want to relearn the model, we have to uncomment those lines below.
+        
         # interactions=Interactions.objects.all()
-        
-        
-        
-        # relearn and train the model
-        
         # user2user.preprocessor(interactions,eventStrength)
-        # user2user.scheduler()
+        # user2user.relearner()
         
-        
-        # Load the weights and make prediction
         
         with open(ratings_path,"rb") as ratings_weight:
             ratings=pickle.load(ratings_weight)
