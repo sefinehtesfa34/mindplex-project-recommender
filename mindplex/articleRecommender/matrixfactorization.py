@@ -16,10 +16,12 @@ class MatrixFactorization:
                  random_seed=1000,
                  path=''
                  ) -> None:
-        self.pivot_ratings=ratings 
-        self.ratings=tf.convert_to_tensor(ratings,dtype=tf.float32)
+        self.pivot_ratings = ratings 
+        self.ratings = tf.convert_to_tensor(ratings,dtype=tf.float32)
         self.mask=tf.not_equal(self.ratings,0)
         self.num_users,self.num_items=self.ratings.shape
+        print(self.num_users,self.num_items)
+        
         self.tolerable_loss=0.001
         self.path=path
         self.latent_features=latent_features

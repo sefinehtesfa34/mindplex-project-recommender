@@ -58,8 +58,6 @@ class User2UserBased:
                 temp+=rating 
                 index1=mapping_userId_to_index[userId]
                 index2=mapping_userId_to_index[user_id]
-                
-                
                 try:
                     similarity_score=user_to_user_similarity[(index1,index2)]
                 except:

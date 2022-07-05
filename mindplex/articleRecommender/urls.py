@@ -13,8 +13,8 @@ urlpatterns = [
     path("LBR-collaborative/<str:userId>/",views.LocationBasedRecommenderUsingCF().as_view()),
     path("LBR-content-based/<str:userId>/",views.LBRUsingCB.as_view()),
     path("LBR-popular/<str:userId>/",views.LocationBasedRecommenderUsingPBR.as_view()),
-    path("matrix/<str:userId>/",views.User2UserView.as_view()),
-    path("ranking/<str:userId>/",views.RankingModelView.as_view())
-    
+    path("user-based/<str:userId>/",views.User2UserView.as_view()),
+    path("ranking/<str:userId>/",views.RankingModelView.as_view()),
+    path("item-based/<str:userId>/<str:contentId>/",views.Item2ItemBasedView.as_view())    
     ]
 
