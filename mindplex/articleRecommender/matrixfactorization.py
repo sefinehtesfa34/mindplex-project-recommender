@@ -28,6 +28,7 @@ class MatrixFactorization:
         self.Q=tf.Variable(self.weight_initializer((self.num_items,self.latent_features)))
         self.epochs=epochs
         self.l2_regularizer=l2_regularizer
+        self.ratings_path="ratingsWeight"
         
     def loss(self):
         """ 
@@ -60,6 +61,7 @@ class MatrixFactorization:
         
         user_similarity_index=np.argsort(self.user_similarity)[::-1]
         item_similarity_index=np.argsort(self.item_similarity)[::-1]
+        
         unique_user_similarity_ratings=self.optimalSimilarityWeightSaver(self.user_similarity)
         unique_item_similarity_ratings=self.optimalSimilarityWeightSaver(self.item_similarity)
         
@@ -70,7 +72,13 @@ class MatrixFactorization:
         
         with open(self.path,"wb") as weights:
             pickle.dump([user_similarity_index,item_similarity_index],weights)
-    
+        
+        with open(self.ratings_path,"wb") as ratings_weight:
+            pickle.dumps(self.ratings,ratings_weight)
+        
+            
+            
+            
     def optimalSimilarityWeightSaver(self,similarity_type):
         shape=similarity_type.shape
         visited=set()

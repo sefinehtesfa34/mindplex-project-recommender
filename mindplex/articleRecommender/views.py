@@ -508,6 +508,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
             
             with open(path,"rb") as weights:
                 user_similarity,item_similarity=pickle.load(weights) 
+            
             with open(similarity_path,"rb") as similarity_file:
                 user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
             
