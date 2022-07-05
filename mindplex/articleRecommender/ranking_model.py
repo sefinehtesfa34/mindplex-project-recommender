@@ -9,14 +9,16 @@ class RankingModel(tf.keras.Model):
         self.user_embeddings = tf.keras.Sequential([
           tf.keras.layers.StringLookup(
             vocabulary=unique_user_ids, mask_token=None),
-          tf.keras.layers.Embedding(len(unique_user_ids) + 1, embedding_dimension)
+          tf.keras.layers.Embedding(len(unique_user_ids) + 1, 
+                                    embedding_dimension)
         ])
     
         # Compute embeddings for movies.
         self.item_embeddings = tf.keras.Sequential([
           tf.keras.layers.StringLookup(
             vocabulary=unique_content_ids, mask_token=None),
-          tf.keras.layers.Embedding(len(unique_content_ids) + 1, embedding_dimension)
+          tf.keras.layers.Embedding(len(unique_content_ids) + 1, 
+                                    embedding_dimension)
         ])
     
         # Compute predictions.

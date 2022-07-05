@@ -12,7 +12,9 @@ task =  tfrs.tasks.Ranking(
 class RatingsBaseModel(tfrs.models.Model):
   def __init__(self,unique_user_ids,unique_content_ids):
     super().__init__()
-    self.ranking_model: tf.keras.Model = RankingModel(unique_user_ids=unique_user_ids,unique_content_ids=unique_content_ids)
+    self.ranking_model: tf.keras.Model = RankingModel(
+      unique_user_ids=unique_user_ids,
+      unique_content_ids=unique_content_ids)
     self.task: tf.keras.layers.Layer = task
 
   def call(self, features: Dict[str, tf.Tensor]) -> tf.Tensor:

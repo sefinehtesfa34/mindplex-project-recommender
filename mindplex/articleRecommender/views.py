@@ -1,5 +1,5 @@
 import pickle
-from typing import Any
+from typing import Any, OrderedDict
 import numpy as np
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
@@ -455,8 +455,8 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
-    def get(self,request,userId):
-        interactions=Interactions.objects.all()
+    def preprocessor(self,interactions):
+        
         interactions_df=read_frame(interactions,
                         fieldnames=[
                             "userId",
@@ -469,43 +469,99 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
         interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
         interactions_df=interactions_df.iloc[1:,:]
-        
-        average=interactions_df["eventStrength"].mean()
-        ratings=interactions_df.pivot_table(index="userId",columns="contentId",values="eventStrength").fillna(average)
-        
+        return interactions_df
+    
+    
+    def get(self,request,userId):
         latent_features=15
         learning_rate=0.001
         epochs=100
-        path="PQweights"
+        path="similarityWeights"
         
+        interactions=Interactions.objects.all()
+        interactions_df=self.preprocessor(interactions)
+        average=interactions_df["eventStrength"].mean()
+        ratings=interactions_df.pivot_table(index="userId",
+                                            columns="contentId",
+                                            values="eventStrength")\
+                                            .fillna(average)
+        
+        ratings_path="ratingsWeight"
+        with open(ratings_path,"wb") as ratings_weight:
+            pickle.dump(ratings,ratings_weight)
+        
+        
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
         
         instance=MatrixFactorization(ratings,latent_features,
                                      learning_rate,
                                      epochs,path=path)    
         instance.train()
+        
+        
         with open(path,"rb") as weights:
-            PQ=pickle.load(weights)
-        P,Q=PQ
-        matrix=np.array(P) @ np.transpose(Q) 
-        argsorted=matrix.argsort()
-        userIds=ratings.index.tolist()
-        index=userIds.index(userId)
+            user_similarity,item_similarity=pickle.load(weights) 
+        index=mapping_userId_to_index.get(userId,None)
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        similar_users_index=user_similarity[index][:100]
+        similar_user_ids=[]
+        for index in similar_users_index:
+            similar_user_ids.append(mapping_index_to_user_ids[index])
         
-        recommended_indeces=set(argsorted[index].tolist()[-11:]) 
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+                
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         
-        top_10_similar_users=[]
-        for index,userId in enumerate(ratings.index):
-            if index in recommended_indeces:
-                top_10_similar_users.append(userId)
-            if len(top_10_similar_users)==10:
-                break 
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
         
         
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
-        return Response({"Message":f"{top_10_similar_users}"})
+        similarity_path="similarity"
+        with open(similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        
+        
+        average_ratings={}
+        for content_id in user_uninteracted_content_ids:
+            total_rating=0
+            temp=0
+            for user_id in similar_user_ids:
+                rating=ratings.loc[user_id,content_id]
+                temp+=rating 
+                index1=mapping_userId_to_index[userId]
+                index2=mapping_userId_to_index[user_id]
+                
+                try:
+                    similarity_score=user_to_user_similarity[(index1,index2)]
+                except:
+                    similarity_score=user_to_user_similarity[(index2,index1)]
+                total_rating+=(rating*similarity_score)
+                
+                
+            weighted_average=total_rating/temp 
+            average_ratings[content_id]=weighted_average
+        print(average_ratings)        
+        
+        top_10=sorted(average_ratings.items(),key=lambda x:x[1])[:10]
+        top_10_content_ids=[content_id for content_id,rating in top_10]
+        recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        result=self.paginate_queryset(recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)    
+        
+        return self.get_paginated_response(serializer.data)
     
        
-    
+
     
 class RankingModelView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
@@ -515,7 +571,8 @@ class RankingModelView(APIView,PageNumberPagination):
         self.eventStrength=eventStrength
         
     def get_object(self,userId):
-        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        self.excluded_article=Interactions.objects.filter(userId=userId)\
+                                            .only("contentId")
         serializer=ContentIdSerializer(self.excluded_article,many=True)
         self.excluded_article_set=set()
         for dict in serializer.data:
@@ -525,17 +582,18 @@ class RankingModelView(APIView,PageNumberPagination):
         self.get_object(userId)
         queryset=Interactions.objects.all()
         
-        interactions_df=read_frame(
-                        queryset,
-                        fieldnames=[
+        interactions_df=read_frame(queryset,fieldnames=[
                             "userId",
                             "eventType",
                             "contentId__contentId",                    
                             ]
                         )
-        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"rating","contentId__contentId":"contentId"})
+        interactions_df=interactions_df.rename(columns={"userId":"userId",
+                                                        "eventType":"rating",
+                                                        "contentId__contentId":"contentId"})
         ratings=interactions_df.iloc[1:,:]
-        ratings["rating"]=interactions_df["rating"].apply(lambda x:self.eventStrength.get(x,0))
+        ratings["rating"]=interactions_df["rating"]\
+            .apply(lambda x:self.eventStrength.get(x,0))
         
         
         ranking = BasicRanking(ratings)
@@ -565,9 +623,13 @@ class RankingModelView(APIView,PageNumberPagination):
         # Make predictions
         
         # Loop over all items and filter the top 10 highest rating values
-        all_content_ids=np.unique(ratings[~ratings["contentId"].isin(self.excluded_article_set)]["contentId"])
+        all_content_ids=np.unique(ratings[~ratings["contentId"]\
+            .isin(self.excluded_article_set)]["contentId"])
         
-        predicted_ratings=[(loaded({"userId": np.array([userId]), "contentId": [contentId]}).numpy().tolist()[0],contentId) for contentId in all_content_ids]
+        predicted_ratings=[(loaded({"userId": np.array([userId]), 
+                                    "contentId": [contentId]})\
+                                        .numpy().tolist()[0],contentId) 
+                                        for contentId in all_content_ids]
         top_10_highest_rating_values=sorted(predicted_ratings)[-10:]
         print(top_10_highest_rating_values)
         

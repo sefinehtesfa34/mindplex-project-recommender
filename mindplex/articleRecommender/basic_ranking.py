@@ -4,13 +4,14 @@ import tensorflow as tf
 from articleRecommender.tensorflow_dataset import ListofRatings
 
 class BasicRanking:
+    
     def __init__(self,data:pd.DataFrame) -> None:
         self.data=data
         self.unique_userIds_and_contentIds()
         
     def dataFrame_to_dict(self):
         return self.data.to_dict("list")
-    
+
     def createTfds(self):
         ratings_to_dict=self.dataFrame_to_dict()
         return tf.data.Dataset.from_tensor_slices(ratings_to_dict) 
