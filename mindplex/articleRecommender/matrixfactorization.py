@@ -90,6 +90,15 @@ class MatrixFactorization:
             #        [0.80003622, 0.68565262, 0.7020156 , 1.        ]])
 
 # Look the redandunt cells above 
+# The output of the optimalSimilarityWeightSaver function will be 
+# {
+#    (0,0):1.,(0,1):0.95580297,(0,2):0.72165664,(0,3):0.80003622,
+#    (1,1):1.,(1,2):0.83140902,(1,3):0.68565262),
+#    (2,2):1.0,(2,3):0.7020156,
+#   (3,3):1.0
+# }
+# The removed are (1,0),(2,0),(3,0),(2,1),(3,1),(3,2)<==redandunt
+# We can also remove similarities to themselves==>1.0
 
     
      
