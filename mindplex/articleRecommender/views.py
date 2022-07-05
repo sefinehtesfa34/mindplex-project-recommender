@@ -11,7 +11,7 @@ from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.item2item import Item2ItemBased
-from articleRecommender.matrixfactorization import MatrixFactorization
+from articleRecommender.model_relearner import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
 from articleRecommender.ratings_base_model import RatingsBaseModel
@@ -478,13 +478,11 @@ class User2UserView(APIView,PageNumberPagination):
         ratings_path="ratingsWeight"
         
         self.excludedArticles(userId)
+        
         user2user=User2UserBased(path)
         
         # When we want to relearn the model, we have to uncomment these lines below.
         
-        interactions=Interactions.objects.all()
-        user2user.preprocessor(interactions,eventStrength)
-        user2user.relearner()
         
         
         with open(ratings_path,"rb") as ratings_weight:
@@ -605,7 +603,55 @@ class Item2ItemBasedView(APIView,PageNumberPagination):
         
         return self.get_paginated_response(serializer.data)
                 
-
+class LearnerView(APIView):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+        self.interactions=Interactions.objects.all()
+        
+    def preprocessor(self):
+    
+        interactions_df=read_frame(self.interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
+        
+        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
+        interactions_df=interactions_df.iloc[1:,:]
+        average=interactions_df["eventStrength"].mean()
+        ratings=interactions_df.pivot_table(index="userId",
+                                            columns="contentId",
+                                            values="eventStrength")\
+                                            .fillna(average)
+        self.ratings=ratings 
+        
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    def get(self,request):
+        try:
+            self.preprocessor()
+            path="similarityIndexWeights"
+            learner=MatrixFactorization(self.ratings,path)
+            learner.train()
+            
+            return Response(status.HTTP_202_ACCEPTED)
+        except:
+            return Response(status.HTTP_304_NOT_MODIFIED)
+        
+    
+    
+    
+    
+        
 
     
 class RankingModelView(APIView,PageNumberPagination):

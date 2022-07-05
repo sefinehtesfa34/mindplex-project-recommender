@@ -1,7 +1,3 @@
-from django_pandas.io import read_frame
-import numpy as np
-
-from articleRecommender.matrixfactorization import MatrixFactorization
 class Item2ItemBased:
     def __init__(self,path) -> None:
         self.path=path
