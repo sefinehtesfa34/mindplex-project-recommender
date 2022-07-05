@@ -478,13 +478,16 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         self.excludedArticles(userId)
         user2user=User2UserBased(path)
-        interactions=Interactions.objects.all()
+        # interactions=Interactions.objects.all()
         
         
         
         # relearn and train the model
-        user2user.preprocessor(interactions,eventStrength)
-        user2user.scheduler()
+        
+        # user2user.preprocessor(interactions,eventStrength)
+        # user2user.scheduler()
+        
+        
         # Load the weights and make prediction
         
         with open(ratings_path,"rb") as ratings_weight:
@@ -498,7 +501,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         mapping_index_to_user_ids,mapping_userId_to_index=self.mapper(ratings)
         index=mapping_userId_to_index.get(userId,None)
-        
+            
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
         similar_users_index=user_similarity[index][:100]
@@ -522,7 +525,8 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
                 similar_user_ids,
                 mapping_userId_to_index,
                 userId,
-                user_to_user_similarity)
+                user_to_user_similarity,
+                ratings) 
         
         
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)

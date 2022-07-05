@@ -45,14 +45,15 @@ class User2UserBased:
                    similar_user_ids,
                    mapping_userId_to_index,
                    userId,
-                   user_to_user_similarity
+                   user_to_user_similarity,
+                   ratings
                    ):
         average_ratings={}
         for content_id in user_uninteracted_content_ids:
             total_rating=0
             temp=0
             for user_id in similar_user_ids:
-                rating=self.ratings.loc[user_id,content_id]
+                rating=ratings.loc[user_id,content_id]
                 temp+=rating 
                 index1=mapping_userId_to_index[userId]
                 index2=mapping_userId_to_index[user_id]
