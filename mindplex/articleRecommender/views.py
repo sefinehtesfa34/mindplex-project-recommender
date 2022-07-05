@@ -1,25 +1,20 @@
 import pickle
-import pandas as pd 
 from typing import Any, OrderedDict
-import numpy as np
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
 from articleRecommender.item2item import Item2ItemBased
 from articleRecommender.model_relearner import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
-from articleRecommender.ratings_base_model import RatingsBaseModel
 from articleRecommender.user2user import User2UserBased
 
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
-import tensorflow as tf
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -480,9 +475,6 @@ class User2UserView(APIView,PageNumberPagination):
         self.excludedArticles(userId)
         
         user2user=User2UserBased(path)
-        
-        # When we want to relearn the model, we have to uncomment these lines below.
-        
         
         
         with open(ratings_path,"rb") as ratings_weight:
