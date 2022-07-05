@@ -1,4 +1,5 @@
 import pickle
+import pandas as pd 
 from typing import Any, OrderedDict
 import numpy as np
 from rest_framework.pagination import PageNumberPagination
@@ -456,7 +457,28 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
+    def preprocessor(self,interactions):
+    
+        interactions_df=read_frame(interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
         
+        interactions_df['eventType'] = interactions_df['eventType'].apply(lambda x: self.eventStrength.get(x,0))
+        interactions_df=interactions_df.rename(columns={"eventType":"eventStrength"})
+        interactions_df=interactions_df.iloc[1:,:]
+        average=interactions_df["eventStrength"].mean()
+        ratings=interactions_df.pivot_table(index="userId",
+                                            columns="contentId",
+                                            values="eventStrength")\
+                                            .fillna(average)
+        
+        return ratings
+    
     def excludedArticles(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
         serializer=ContentIdSerializer(self.excluded_article,many=True)
@@ -473,7 +495,7 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
     def get(self,request,userId,train=False):
         if train:
             interactions=Interactions.objects.all()
-            path="similarityWeights"
+            path="similarityIndexWeights"
             user2user=User2UserBased(path)
             ratings=user2user.preprocessor(interactions)
             user2user.scheduler(ratings,path)
@@ -481,27 +503,20 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         
         else:
             self.excludedArticles(userId)
-            # latent_features=15
-            # learning_rate=0.001
-            # epochs=100
+            latent_features=15
+            learning_rate=0.001
+            epochs=100
             
-            # interactions=Interactions.objects.all()
-            # interactions_df=self.preprocessor(interactions)
-            # average=interactions_df["eventStrength"].mean()
-            # ratings=interactions_df.pivot_table(index="userId",
-            #                                     columns="contentId",
-            #                                     values="eventStrength")\
-            #                                     .fillna(average)
-            
-            
-            # instance=MatrixFactorization(ratings,latent_features,
-            #                              learning_rate,
-            #                              epochs,path=path)    
-            # instance.train()
-            
-            path="similarityWeights"
+            path="similarityIndexWeights"
             similarity_path="similarity"
             ratings_path="ratingsWeight"
+            
+            interactions=Interactions.objects.all()
+            ratings=self.preprocessor(interactions)
+            instance=MatrixFactorization(ratings,latent_features,
+                                         learning_rate,
+                                         epochs,path=path)    
+            instance.train()
             
             with open(ratings_path,"rb") as ratings_weight:
                 ratings=pickle.load(ratings_weight)

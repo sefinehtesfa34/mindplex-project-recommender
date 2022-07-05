@@ -16,6 +16,7 @@ class MatrixFactorization:
                  random_seed=1000,
                  path=''
                  ) -> None:
+        self.pivot_ratings=ratings 
         self.ratings=tf.convert_to_tensor(ratings,dtype=tf.float32)
         self.mask=tf.not_equal(self.ratings,0)
         self.num_users,self.num_items=self.ratings.shape
@@ -72,9 +73,8 @@ class MatrixFactorization:
         
         with open(self.path,"wb") as weights:
             pickle.dump([user_similarity_index,item_similarity_index],weights)
-        
         with open(self.ratings_path,"wb") as ratings_weight:
-            pickle.dumps(self.ratings,ratings_weight)
+            pickle.dump(self.pivot_ratings,ratings_weight)
         
             
             
