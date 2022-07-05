@@ -7,6 +7,7 @@ class User2UserBased:
     def __init__(self,path) -> None:
         self.path=path
           
+    
     def preprocessor(self,interactions,eventStrength):
     
         interactions_df=read_frame(interactions,
