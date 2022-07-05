@@ -10,6 +10,7 @@ from rest_framework import status
 from articleRecommender.basic_ranking import BasicRanking
 from articleRecommender.collaborative_filtering.collabrative_filtering_reommender import CollaborativeFiltering
 from articleRecommender.content_based.content_based_recommender import ContentBasedRecommender
+from articleRecommender.item2item import Item2ItemBased
 from articleRecommender.matrixfactorization import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
@@ -453,7 +454,7 @@ class LocationBasedRecommenderUsingPBR(APIView,PageNumberPagination):
         
 
         return self.get_paginated_response(serializer.data)
-class MatrixFactorizationView(APIView,PageNumberPagination):
+class User2UserView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
@@ -530,8 +531,84 @@ class MatrixFactorizationView(APIView,PageNumberPagination):
         serializer=ArticleSerializer(result,many=True)    
         
         return self.get_paginated_response(serializer.data)
+class Item2ItemBasedView(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    def mapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
         
-       
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
+        
+    def get(self,request,userId,contentId):
+        path="similarityIndexWeights"
+        similarity_path="similarity"
+        ratings_path="ratingsWeight"
+        
+        self.excludedArticles(userId)
+        item2item=Item2ItemBased(path)
+        
+        
+        interactions=Interactions.objects.all()
+        item2item.preprocessor(interactions,eventStrength)
+        
+        
+        with open(ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+        
+        with open(path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        
+        with open(similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        
+        mapping_index_to_user_ids,mapping_userId_to_index=self.mapper(ratings)
+        index=mapping_userId_to_index.get(userId,None)
+            
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        similar_users_index=user_similarity[index][:100]
+        similar_user_ids=[]
+        for index in similar_users_index:
+            similar_user_ids.append(mapping_index_to_user_ids[index])
+        
+                
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        
+        
+        
+        top_10_content_ids=user2user.top_10_content_ids_finder(
+                user_uninteracted_content_ids,
+                similar_user_ids,
+                mapping_userId_to_index,
+                userId,
+                user_to_user_similarity,
+                ratings) 
+        
+        
+        recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        result=self.paginate_queryset(recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)    
+        
+        return self.get_paginated_response(serializer.data)
+                
+
 
     
 class RankingModelView(APIView,PageNumberPagination):

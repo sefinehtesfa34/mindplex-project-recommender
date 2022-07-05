@@ -40,6 +40,7 @@ class User2UserBased:
                                      learning_rate,
                                      epochs,path=self.path)    
         instance.train()
+    
     def top_10_content_ids_finder(self,
                    user_uninteracted_content_ids,
                    similar_user_ids,
