@@ -660,4 +660,12 @@ class HybirdRecommender(APIView,PageNumberPagination):
         mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
         return mapping_index_to_user_ids,mapping_userId_to_index
             
+    def itemIdMapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
+        
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
     
