@@ -728,5 +728,7 @@ class HybirdRecommender(APIView,PageNumberPagination):
                 self.userId,
                 item_to_item_similarity,
                 ratings) 
-        
-                
+    def forUser2UserBased(self):
+        pass 
+    
+
