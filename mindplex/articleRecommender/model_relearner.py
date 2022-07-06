@@ -1,11 +1,9 @@
 import pickle
-import os 
 import tensorflow as tf  
 import numpy as np 
 import warnings 
 from sklearn.metrics.pairwise import cosine_similarity
 warnings.filterwarnings("ignore")
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class MatrixFactorization:
     def __init__(self,
                  ratings,
@@ -16,8 +14,10 @@ class MatrixFactorization:
                  random_seed=1000,
                  path='weights'
                  ) -> None:
-        self.pivot_ratings = ratings 
+        self.pivot_ratings = ratings
+        
         self.ratings = tf.convert_to_tensor(ratings,dtype=tf.float32)
+        
         self.mask=tf.not_equal(self.ratings,0)
         self.num_users,self.num_items=self.ratings.shape
         self.tolerable_loss=0.001
@@ -29,7 +29,8 @@ class MatrixFactorization:
         self.Q=tf.Variable(self.weight_initializer((self.num_items,self.latent_features)))
         self.epochs=epochs
         self.l2_regularizer=l2_regularizer
-        self.ratings_path="ratingsWeight"   
+        self.ratings_path="ratingsWeight"
+           
     def loss(self):
         """ 
         Squared error loss

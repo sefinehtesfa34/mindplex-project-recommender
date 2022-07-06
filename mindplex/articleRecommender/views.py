@@ -600,7 +600,7 @@ class LearnerView(APIView):
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
         self.interactions=Interactions.objects.all()
-        
+        self.ratings=None
     def preprocessor(self):
     
         interactions_df=read_frame(self.interactions,
@@ -629,16 +629,20 @@ class LearnerView(APIView):
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
     def get(self,request):
-        try:
-            self.preprocessor()
-            path="similarityIndexWeights"
-            learner=MatrixFactorization(self.ratings,path)
-            learner.train()
-            
-            return Response(status.HTTP_202_ACCEPTED)
-        except:
-            return Response(status.HTTP_304_NOT_MODIFIED)
+        # try:
+        #     self.preprocessor()
+        #     path="similarityIndexWeights"
+        #     learner=MatrixFactorization(self.ratings,path)
+        #     learner.train()
+        #     return Response(status.HTTP_202_ACCEPTED)
+        # except:
+        #     return Response(status.HTTP_304_NOT_MODIFIED)
+        self.preprocessor()
+        path="similarityIndexWeights"
         
+        learner=MatrixFactorization(self.ratings,path=path)
+        learner.train()
+        return Response(status.HTTP_202_ACCEPTED)
     
     
     
