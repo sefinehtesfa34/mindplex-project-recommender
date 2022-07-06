@@ -629,14 +629,6 @@ class LearnerView(APIView):
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
     def get(self,request):
-        # try:
-        #     self.preprocessor()
-        #     path="similarityIndexWeights"
-        #     learner=MatrixFactorization(self.ratings,path)
-        #     learner.train()
-        #     return Response(status.HTTP_202_ACCEPTED)
-        # except:
-        #     return Response(status.HTTP_304_NOT_MODIFIED)
         self.preprocessor()
         path="similarityIndexWeights"
         
