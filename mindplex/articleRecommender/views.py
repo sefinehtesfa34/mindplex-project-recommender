@@ -481,7 +481,7 @@ class User2UserView(APIView,PageNumberPagination):
             ratings=pickle.load(ratings_weight)
         
         with open(path,"rb") as weights:
-            user_similarity,item_similarity=pickle.load(weights) 
+            users_similarity_index,items_similarity_index=pickle.load(weights) 
         
         with open(similarity_path,"rb") as similarity_file:
             user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
@@ -491,7 +491,8 @@ class User2UserView(APIView,PageNumberPagination):
             
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
-        similar_users_index=user_similarity[index][:100]
+        # In the sliced array below 1 is added to remove user to himself similarity
+        similar_users_index=users_similarity_index[index][1:100]
         similar_user_ids=[]
         for index in similar_users_index:
             similar_user_ids.append(mapping_index_to_user_ids[index])
@@ -699,7 +700,6 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
     
         mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
         index=mapping_itemId_to_index.get(self.contentId,None)
-        
         
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
