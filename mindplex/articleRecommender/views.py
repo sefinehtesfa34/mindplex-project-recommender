@@ -687,6 +687,14 @@ class HybirdRecommender(APIView,PageNumberPagination):
         # If the contentId is None, this means the recommender 
         # is not item-item based, in this case it would be user-user based recommender
         
+        recommended_articles=Article.objects.filter(contentId__in=self.top_10_content_ids)
+        result=self.paginate_queryset(recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)
+        
+        return self.get_paginated_response(serializer.data)
+        
+        
+        
     def forItem2ItemBased(self):
         item2item=Item2ItemBased(self.path)
         
@@ -721,4 +729,4 @@ class HybirdRecommender(APIView,PageNumberPagination):
                 item_to_item_similarity,
                 ratings) 
         
-        
+                
