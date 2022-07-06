@@ -645,16 +645,10 @@ class LearnerView(APIView):
         return Response(status.HTTP_202_ACCEPTED)
     
     
-class HybirdRecommender(APIView,PageNumberPagination):
+class HybirdRecommenderView(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
-        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
-        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
-        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
-        serializer=ContentIdSerializer(content_ids,many=True)
-        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
     def excludedArticles(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
@@ -675,13 +669,20 @@ class HybirdRecommender(APIView,PageNumberPagination):
         mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
         mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
         return mapping_index_to_item_ids,mapping_item_id_to_index
-    def get(self,request,userId,contentId=None):
+    def get(self,request,userId,contentId):
         self.userId=userId
         self.contentId=contentId 
         self.path="similarityIndexWeights"
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
         self.excludedArticles(userId)    
+        
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
         # If the contentId is None, this means the recommender 
         # is not item-item based, in this case it would be user-user based recommender
