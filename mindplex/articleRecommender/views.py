@@ -681,13 +681,16 @@ class HybirdRecommender(APIView,PageNumberPagination):
         self.path="similarityIndexWeights"
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
-        self.excludedArticles(userId)
-        
+        self.excludedArticles(userId)    
         
         # If the contentId is None, this means the recommender 
         # is not item-item based, in this case it would be user-user based recommender
         
-        recommended_articles=Article.objects.filter(contentId__in=self.top_10_content_ids)
+        top_5_content_ids_with_user2user=self.forUser2UserBased()[:5]
+        top_5_content_ids_with_item2item=self.forItem2ItemBased()[:5]
+        top_10_content_ids=top_5_content_ids_with_item2item+top_5_content_ids_with_user2user
+        
+        recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)
         
@@ -720,14 +723,16 @@ class HybirdRecommender(APIView,PageNumberPagination):
         for index in similar_items_index:
             similar_item_ids.append(mapping_index_to_item_ids[index])
         
-        self.top_10_content_ids=item2item.top_10_content_ids_finder(
+        top_10_content_ids=item2item.top_10_content_ids_finder(
                 self.user_uninteracted_content_ids,
                 similar_item_ids,
                 mapping_itemId_to_index,
                 self.contentId,
                 self.userId,
                 item_to_item_similarity,
-                ratings) 
+                ratings)
+        return top_10_content_ids
+     
     def forUser2UserBased(self):
         user2user=User2UserBased(self.path)
         
@@ -747,7 +752,7 @@ class HybirdRecommender(APIView,PageNumberPagination):
         for index in similar_users_index:
             similar_user_ids.append(mapping_index_to_user_ids[index])
                 
-        self.top_10_content_ids=user2user.top_10_content_ids_finder(
+        top_10_content_ids=user2user.top_10_content_ids_finder(
                 self.user_uninteracted_content_ids,
                 similar_user_ids,
                 mapping_userId_to_index,
@@ -755,5 +760,6 @@ class HybirdRecommender(APIView,PageNumberPagination):
                 user_to_user_similarity,
                 ratings) 
             
+        return top_10_content_ids
     
 
