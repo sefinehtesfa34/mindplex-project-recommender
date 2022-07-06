@@ -499,7 +499,7 @@ class User2UserView(APIView,PageNumberPagination):
                 
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        
+    
         content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
@@ -572,8 +572,8 @@ class Item2ItemBasedView(APIView,PageNumberPagination):
                  
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
         
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
@@ -649,6 +649,13 @@ class HybirdRecommender(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        
     def excludedArticles(self,userId):
         self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
         serializer=ContentIdSerializer(self.excluded_article,many=True)
@@ -675,6 +682,8 @@ class HybirdRecommender(APIView,PageNumberPagination):
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
         self.excludedArticles(userId)
+        
+        
         # If the contentId is None, this means the recommender 
         # is not item-item based, in this case it would be user-user based recommender
         
@@ -703,4 +712,13 @@ class HybirdRecommender(APIView,PageNumberPagination):
         for index in similar_items_index:
             similar_item_ids.append(mapping_index_to_item_ids[index])
         
-    
+        self.top_10_content_ids=item2item.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_item_ids,
+                mapping_itemId_to_index,
+                self.contentId,
+                self.userId,
+                item_to_item_similarity,
+                ratings) 
+        
+        
