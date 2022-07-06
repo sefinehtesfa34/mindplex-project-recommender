@@ -24,7 +24,10 @@ eventStrength={
             "FOLLOW":2.0,
             "UNFOLLOW":2.0,
             "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
+            "REACT-POSITIVE":1.5<<<<<<< sefineh
+648
+ 
+,
             "REACT-NEGATIVE":1.5,
             "COMMENT-BEST-POSITIVE":3.0,
             "COMMENT-AVERAGE-POSITIVE":2.5,
@@ -499,7 +502,7 @@ class User2UserView(APIView,PageNumberPagination):
                 
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        
+    
         content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
@@ -572,8 +575,8 @@ class Item2ItemBasedView(APIView,PageNumberPagination):
                  
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
         
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
@@ -644,7 +647,123 @@ class LearnerView(APIView):
         learner.train()
         return Response(status.HTTP_202_ACCEPTED)
     
-                
     
+class HybirdRecommenderView(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
         
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    def userIdMapper(self,ratings):
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_user_ids,mapping_userId_to_index
+            
+    def itemIdMapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
+        
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
+    def get(self,request,userId,contentId):
+        self.userId=userId
+        self.contentId=contentId 
+        self.path="similarityIndexWeights"
+        self.similarity_path="similarity"
+        self.ratings_path="ratingsWeight"
+        self.excludedArticles(userId)    
+        
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        
+        # If the contentId is None, this means the recommender 
+        # is not item-item based, in this case it would be user-user based recommender
+        
+        top_5_content_ids_with_user2user=self.forUser2UserBased()[:5]
+        top_5_content_ids_with_item2item=self.forItem2ItemBased()[:5]
+        top_10_content_ids=top_5_content_ids_with_item2item+top_5_content_ids_with_user2user
+        
+        recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        result=self.paginate_queryset(recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)
+        
+        return self.get_paginated_response(serializer.data)
+        
+        
+        
+    def forItem2ItemBased(self):
+        item2item=Item2ItemBased(self.path)
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+
+        ratings=ratings.T
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
+    
+        mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
+        index=mapping_itemId_to_index.get(self.contentId,None)
+        
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        
+        similar_items_index=item_similarity[index][:100]
+        
+        
+        similar_item_ids=[]
+        for index in similar_items_index:
+            similar_item_ids.append(mapping_index_to_item_ids[index])
+        
+        top_10_content_ids=item2item.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_item_ids,
+                mapping_itemId_to_index,
+                self.contentId,
+                self.userId,
+                item_to_item_similarity,
+                ratings)
+        return top_10_content_ids
+     
+    def forUser2UserBased(self):
+        user2user=User2UserBased(self.path)
+        
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        mapping_index_to_user_ids,mapping_userId_to_index=self.userIdMapper(ratings)
+        index=mapping_userId_to_index.get(self.userId,None)
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        similar_users_index=user_similarity[index][:100]
+        similar_user_ids=[]
+        for index in similar_users_index:
+            similar_user_ids.append(mapping_index_to_user_ids[index])
+                
+        top_10_content_ids=user2user.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_user_ids,
+                mapping_userId_to_index,
+                self.userId,
+                user_to_user_similarity,
+                ratings) 
+            
+        return top_10_content_ids
+    
 
