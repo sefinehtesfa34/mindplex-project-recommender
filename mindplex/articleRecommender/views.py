@@ -734,12 +734,13 @@ class HybirdRecommender(APIView,PageNumberPagination):
         
         with open(self.ratings_path,"rb") as ratings_weight:
             ratings=pickle.load(ratings_weight)
-        
         with open(self.path,"rb") as weights:
             user_similarity,item_similarity=pickle.load(weights) 
-        
         with open(self.similarity_path,"rb") as similarity_file:
             user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        mapping_index_to_user_ids,mapping_userId_to_index=self.userIdMapper(ratings)
+        index=mapping_userId_to_index.get(self.userId,None)
+            
         
     
 
