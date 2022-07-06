@@ -700,6 +700,7 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
         mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
         index=mapping_itemId_to_index.get(self.contentId,None)
         
+        
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
         
