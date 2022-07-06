@@ -644,8 +644,68 @@ class LearnerView(APIView):
         learner.train()
         return Response(status.HTTP_202_ACCEPTED)
     
+class HybirdRecommender(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
     
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+        
+    def userIdMapper(self,ratings):
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_user_ids,mapping_userId_to_index
+            
+    def itemIdMapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
+        
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
+    def get(self,request,userId,contentId=None):
+        self.userId=userId
+        self.contentId=contentId 
+        self.path="similarityIndexWeights"
+        self.similarity_path="similarity"
+        self.ratings_path="ratingsWeight"
+        self.excludedArticles(userId)
+        # If the contentId is None, this means the recommender 
+        # is not item-item based, in this case it would be user-user based recommender
+        
+    def forItem2ItemBased(self):
+        item2item=Item2ItemBased(self.path)
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+
+        ratings=ratings.T
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
     
+        mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
+        index=mapping_itemId_to_index.get(self.contentId,None)
+        
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        
+        similar_items_index=item_similarity[index][:100]
+        
+        
+        similar_item_ids=[]
+        for index in similar_items_index:
+            similar_item_ids.append(mapping_index_to_item_ids[index])
+                 
+        
+                
     
         
 
