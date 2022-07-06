@@ -747,7 +747,7 @@ class HybirdRecommender(APIView,PageNumberPagination):
         for index in similar_users_index:
             similar_user_ids.append(mapping_index_to_user_ids[index])
                 
-        top_10_content_ids=user2user.top_10_content_ids_finder(
+        self.top_10_content_ids=user2user.top_10_content_ids_finder(
                 self.user_uninteracted_content_ids,
                 similar_user_ids,
                 mapping_userId_to_index,
