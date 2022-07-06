@@ -668,4 +668,14 @@ class HybirdRecommender(APIView,PageNumberPagination):
         mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
         mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
         return mapping_index_to_item_ids,mapping_item_id_to_index
+    def get(self,request,userId,contentId=None):
+        self.userId=userId
+        self.contentId=contentId 
+        self.path="similarityIndexWeights"
+        self.similarity_path="similarity"
+        self.ratings_path="ratingsWeight"
+        self.excludedArticles(userId)
+        # If the contentId is None, this means the recommender 
+        # is not item-item based, in this case it would be user-user based recommender
+        
     
