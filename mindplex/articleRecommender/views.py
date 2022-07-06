@@ -740,7 +740,13 @@ class HybirdRecommender(APIView,PageNumberPagination):
             user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
         mapping_index_to_user_ids,mapping_userId_to_index=self.userIdMapper(ratings)
         index=mapping_userId_to_index.get(self.userId,None)
-            
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        similar_users_index=user_similarity[index][:100]
+        similar_user_ids=[]
+        for index in similar_users_index:
+            similar_user_ids.append(mapping_index_to_user_ids[index])
+                
         
     
 
