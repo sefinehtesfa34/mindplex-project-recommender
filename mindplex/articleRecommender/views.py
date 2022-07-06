@@ -645,7 +645,9 @@ class LearnerView(APIView):
         return Response(status.HTTP_202_ACCEPTED)
     
     
+class HybirdRecommender(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.eventStrength=eventStrength
     
     
-        
-
