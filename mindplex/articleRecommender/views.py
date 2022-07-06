@@ -24,7 +24,10 @@ eventStrength={
             "FOLLOW":2.0,
             "UNFOLLOW":2.0,
             "DISLIKE":1.0,
-            "REACT-POSITIVE":1.5,
+            "REACT-POSITIVE":1.5<<<<<<< sefineh
+648
+ 
+,
             "REACT-NEGATIVE":1.5,
             "COMMENT-BEST-POSITIVE":3.0,
             "COMMENT-AVERAGE-POSITIVE":2.5,
