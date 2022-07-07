@@ -774,6 +774,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                             "contentId__contentId",
                             
                             ])
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
+
         
 
         
