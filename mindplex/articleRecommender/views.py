@@ -775,7 +775,15 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                             
                             ])
         interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
-
+        interactions_df=interactions_df.set_index("userId")  
+      
+        self.article=Article.objects.all()
+        articles_df=read_frame(self.article,fieldnames=[
+            "authorId",
+            "contentId",
+            "content",
+            "title"])
+        
         
 
         
