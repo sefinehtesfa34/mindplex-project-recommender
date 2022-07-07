@@ -251,7 +251,6 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         recommended_articles,recommendations_df= instance_for_content_based_recommeder.build_user_profile(userId)
-        
         recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
@@ -830,8 +829,14 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         serializer=ContentIdSerializer(content_ids,many=True)
         self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
-        top_10_content_ids=self.forUser2UserBased()
-        recommended_articles_with_user2userBased=Article.objects.filter(contentId__in=top_10_content_ids)
+        self.forUser2UserBased()
+        #Combining the results by contentId
+        recommendations_df = self.cb_recommendations_df.merge(self.cf_recommendations_df,
+                                   how = 'outer', 
+                                   left_on = 'contentId', 
+                                   right_on = 'contentId').fillna(0.0)
+        
+        # recommended_articles_with_user2userBased=Article.objects.filter(contentId__in=top_10_content_ids)
         
         
         
@@ -865,12 +870,9 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         for content_id in top_10_content_ids:
             cf_recommendations[content_id]=ratings.loc[self.userId,content_id]
         cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrength"],columns=top_10_content_ids).T 
+        cf_recommendations_df=cf_recommendations_df.reset_index()
+        self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
         
-        
-        
-        return top_10_content_ids
-        
-    
     
         
         
