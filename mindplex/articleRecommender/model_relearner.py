@@ -16,7 +16,9 @@ class MatrixFactorization:
                  path='weights'
                  ) -> None:
         
+        
         self.pivot_ratings = ratings
+        
         scaler=StandardScaler(with_mean=True,with_std=True)
         scaled_ratings=scaler.fit_transform(ratings)
         self.ratings = tf.convert_to_tensor(scaled_ratings,dtype=tf.float32)
@@ -33,6 +35,13 @@ class MatrixFactorization:
         self.epochs=epochs
         self.l2_regularizer=l2_regularizer
         self.ratings_path="ratingsWeight"
+        
+    def normalizer(self):
+        for content_id in self.pivot_ratings.columns:
+            self.pivot_ratings[content_id]=self.scaler(self.pivot_ratings[content_id])
+    def scaler(self,array):
+        return (array-array.mean())/array.std()
+        
            
     def loss(self):
         """ 
@@ -77,6 +86,7 @@ class MatrixFactorization:
         with open(self.path,"wb") as weights:
             pickle.dump([user_similarity_index,item_similarity_index],weights)
         with open(self.ratings_path,"wb") as ratings_weight:
+            self.normalizer()
             pickle.dump(self.pivot_ratings,ratings_weight)
         
             
