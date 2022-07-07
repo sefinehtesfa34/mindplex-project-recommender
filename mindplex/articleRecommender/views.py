@@ -763,6 +763,9 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
+    def get(self,request,userId,format=None):
+        
+        pass 
     
     
         
