@@ -764,8 +764,19 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         except Interactions.DoesNotExist:
             return None 
     def get(self,request,userId,format=None):
+        user_interact_contentId=self.get_object(userId)
         
-        pass 
+        self.interactions=Interactions.objects.all()
+        interactions_df=read_frame(self.interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        
+
+        
     
     
         
