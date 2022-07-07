@@ -755,7 +755,13 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
-        
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    
     def get_object(self,userId):
         
         try:
@@ -774,7 +780,14 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                             "contentId__contentId",
                             
                             ])
-        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
+        interactions_df=interactions_df.rename(
+            columns={
+                "userId":"userId",
+                "eventType":"eventType",
+                "contentId__contentId":"contentId"
+                }
+            )
+        
         interactions_df=interactions_df.set_index("userId")  
       
         self.article=Article.objects.all()
@@ -798,7 +811,7 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         
         recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
         recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
-        
+
 
         
     
