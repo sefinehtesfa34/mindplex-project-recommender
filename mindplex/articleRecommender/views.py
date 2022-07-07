@@ -11,8 +11,7 @@ from articleRecommender.item2item import Item2ItemBased
 from articleRecommender.model_relearner import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
-from articleRecommender.user2user import User2UserBased
-
+from articleRecommender.user2user import User2UserBased 
 from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
 import warnings
@@ -478,8 +477,7 @@ class User2UserView(APIView,PageNumberPagination):
         
         
         with open(ratings_path,"rb") as ratings_weight:
-            ratings=pickle.load(ratings_weight)
-        
+            ratings=pickle.load(ratings_weight)    
         with open(path,"rb") as weights:
             users_similarity_index,items_similarity_index=pickle.load(weights) 
         
@@ -515,6 +513,7 @@ class User2UserView(APIView,PageNumberPagination):
                 userId,
                 user_to_user_similarity,
                 ratings) 
+        
         
         
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
@@ -630,6 +629,7 @@ class LearnerView(APIView):
         learner=MatrixFactorization(self.ratings,path=path)
         learner.train()
         return Response(status.HTTP_202_ACCEPTED)
+    
     
     
 class HybirdRecommenderView(APIView,PageNumberPagination):
@@ -814,8 +814,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
-        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
+        recommended_articles_with_contentBased=instance_for_content_based_recommeder.build_user_profile(userId)
+        recommended_articles_with_contentBased=Article.objects.filter(contentId__in=recommended_articles_with_contentBased)    
 
         # User2user based recommender
     
@@ -832,7 +832,9 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
         top_10_content_ids=self.forUser2UserBased()
-        recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        recommended_articles_with_user2userBased=Article.objects.filter(contentId__in=top_10_content_ids)
+        
+        
         
     def forUser2UserBased(self):
         user2user=User2UserBased(self.path)
