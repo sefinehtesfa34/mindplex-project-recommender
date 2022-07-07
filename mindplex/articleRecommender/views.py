@@ -761,6 +761,11 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.excluded_article_set=set()
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
+    def userIdMapper(self,ratings):
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_user_ids,mapping_userId_to_index
+    
     
     def get_object(self,userId):
         
