@@ -884,4 +884,61 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.eventStrength=eventStrength
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    
+    def get_object(self,userId):
+        
+        try:
+            return Interactions.objects.filter(userId=userId)
+            
+        except Interactions.DoesNotExist:
+            return None 
+    def get(self,request,userId,format=None):
+        user_interact_contentId=self.get_object(userId)
+        
+        self.interactions=Interactions.objects.all()
+        interactions_df=read_frame(self.interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(
+            columns={
+                "userId":"userId",
+                "eventType":"eventType",
+                "contentId__contentId":"contentId"
+                }
+            )
+        
+        interactions_df=interactions_df.set_index("userId")  
+      
+        self.article=Article.objects.all()
+        articles_df=read_frame(self.article,fieldnames=[
+            "authorId",
+            "contentId",
+            "content",
+            "title"])
+        
+        
+        instance_for_content_based_recommeder=ContentBasedRecommender(
+            articles_df,
+            interactions_df,
+            self.eventStrength,
+            )
+        
+        try:
+            assert(user_interact_contentId)
+        except AssertionError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        _,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
+        
+        # User2user based recommender
     
