@@ -824,7 +824,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
         self.excludedArticles(userId)    
-        user2user=User2UserBased(self.path) 
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
         content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
@@ -835,6 +834,34 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         top_10_content_ids=self.forUser2UserBased()
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         
+    def forUser2UserBased(self):
+        user2user=User2UserBased(self.path)
+        
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_simialrity=pickle.load(similarity_file)
+        mapping_index_to_user_ids,mapping_userId_to_index=self.userIdMapper(ratings)
+        index=mapping_userId_to_index.get(self.userId,None)
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        similar_users_index=user_similarity[index][:100]
+        similar_user_ids=[]
+        for index in similar_users_index:
+            similar_user_ids.append(mapping_index_to_user_ids[index])
+                
+        top_10_content_ids=user2user.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_user_ids,
+                mapping_userId_to_index,
+                self.userId,
+                user_to_user_similarity,
+                ratings) 
+            
+        return top_10_content_ids
         
     
     
