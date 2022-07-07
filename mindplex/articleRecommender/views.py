@@ -828,7 +828,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                 "contentId__contentId":"contentId"
                 }
             )
-        
         interactions_df=interactions_df.set_index("userId")  
       
         self.article=Article.objects.all()
