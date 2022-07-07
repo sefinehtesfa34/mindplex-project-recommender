@@ -26,7 +26,7 @@ class ContentBasedRecommender:
                                                 self.articles_df['title'] \
                                                 + "" + self.articles_df['content'])
     
-    def build_user_profile(self,userId,items_to_ignore=[],topn=10):
+    def build_user_profile(self,userId,items_to_ignore=[],topn=100):
         #The assumption is that self.interactions_df is userId indexed dataframe
         user_interacted_contentId=self.interactions_df.loc[userId]["contentId"]
         user_profile=[]
@@ -52,14 +52,13 @@ class ContentBasedRecommender:
         similar_items = sorted([(self.item_ids[index], cosine_similarities[0,index]) for index in similar_indices], 
                                key=lambda x: -x[1])
         
-        similar_items_filtered = list(filter(lambda item: item[0] not in items_to_ignore, similar_items))
+        similar_items_filtered = list(filter(lambda item: item[0] not in items_to_ignore, similar_items))[:10]
+        
         recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrengthCB']) \
                                     .head(topn)
         self.recommendations_df=recommendations_df
-        print(self.recommendations_df)
         # pandas.Series.argSort() returns the indices that sort the dataFrame.
-        list_of_contentIds=[self.item_ids[index] for index in similar_indices ]
-        return list_of_contentIds,recommendations_df
+        return recommendations_df
 
     
         

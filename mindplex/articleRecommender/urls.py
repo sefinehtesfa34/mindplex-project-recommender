@@ -20,6 +20,5 @@ urlpatterns = [
     path("hybrid-user-item/<str:userId>/<str:contentId>/",views.HybirdRecommenderView.as_view()),
     path("hybrid-user-cb/<str:userId>/",views.HybirdUser2UserAndContentBased.as_view()),
     path("hybrid-item-cb/<str:userId>/<str:contentId>/",views.HybridItem2ItemAndContentBased.as_view()),
-    
     ]
 

@@ -1,4 +1,5 @@
 
+from attr import fields
 from rest_framework import serializers
 from .models import Article,Interactions
 class ArticleSerializer(serializers.ModelSerializer):
@@ -16,6 +17,11 @@ class ContentIdSerializer(serializers.ModelSerializer):
         model=Interactions
         fields=['contentId']
 
+class ArticleContentIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Article
+        fields=["contentId"]
+    
         
 
 
