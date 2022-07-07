@@ -785,6 +785,20 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
             "title"])
         
         
+        instance_for_content_based_recommeder=ContentBasedRecommender(
+            articles_df,
+            interactions_df,
+            self.eventStrength,
+            )
+        
+        try:
+            assert(user_interact_contentId)
+        except AssertionError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
+        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
+        
 
         
     
