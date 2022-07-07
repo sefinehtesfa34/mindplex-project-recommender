@@ -758,6 +758,11 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.excluded_article_set=set()
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
+    def userIdMapper(self,ratings):
+        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_user_ids,mapping_userId_to_index
+            
     
     def get_object(self,userId):
         
@@ -890,6 +895,14 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         self.excluded_article_set=set()
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
+    def itemIdMapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
+        
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
     
     def get_object(self,userId):
         
@@ -898,7 +911,9 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
-    def get(self,request,userId,format=None):
+    def get(self,request,userId,contentId,format=None):
+        self.contentId=contentId 
+        self.userId=userId
         user_interact_contentId=self.get_object(userId)
         
         self.interactions=Interactions.objects.all()
@@ -939,6 +954,58 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         _,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
+        self.userId=userId
+        self.path="similarityIndexWeights"
+        self.similarity_path="similarity"
+        self.ratings_path="ratingsWeight"
+        self.excludedArticles(userId)    
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
         
-        # User2user based recommender
+        self.forItem2ItemBased()    
+        # Item2Item based recommender
+    def forItem2ItemBased(self):
+        item2item=Item2ItemBased(self.path)
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+
+        ratings=ratings.T
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
+    
+        mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
+        index=mapping_itemId_to_index.get(self.contentId,None)
+        
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        
+        similar_items_index=item_similarity[index][:100]
+        
+        
+        similar_item_ids=[]
+        for index in similar_items_index:
+            similar_item_ids.append(mapping_index_to_item_ids[index])
+        
+        top_10_content_ids=item2item.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_item_ids,
+                mapping_itemId_to_index,
+                self.contentId,
+                self.userId,
+                item_to_item_similarity,
+                ratings)
+        cf_recommendations={}
+        for content_id in top_10_content_ids:
+            cf_recommendations[content_id]=ratings.loc[self.userId,content_id]
+        cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrengthCF"],columns=top_10_content_ids).T 
+        cf_recommendations_df=cf_recommendations_df.reset_index()
+        self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
+        
     
