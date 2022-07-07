@@ -811,10 +811,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        recommended_articles_with_contentBased,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
+        _,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
         
-        # recommended_articles_with_contentBased=Article.objects.filter(contentId__in=recommended_articles_with_contentBased)    
-
         # User2user based recommender
     
         self.userId=userId
