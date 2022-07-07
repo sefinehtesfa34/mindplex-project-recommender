@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 import scipy
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -55,10 +56,10 @@ class ContentBasedRecommender:
         recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrength']) \
                                     .head(topn)
         self.recommendations_df=recommendations_df
-        
+        print(self.recommendations_df)
         # pandas.Series.argSort() returns the indices that sort the dataFrame.
         list_of_contentIds=[self.item_ids[index] for index in similar_indices ]
-        return list_of_contentIds
+        return list_of_contentIds,recommendations_df
 
     
         

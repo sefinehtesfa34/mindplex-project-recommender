@@ -1,5 +1,6 @@
 import pickle
 from typing import Any, OrderedDict
+import pandas as pd
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
 from rest_framework.views import APIView
@@ -249,7 +250,7 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        recommended_articles=instance_for_content_based_recommeder.build_user_profile(userId)
+        recommended_articles,recommendations_df= instance_for_content_based_recommeder.build_user_profile(userId)
         
         recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
         result=self.paginate_queryset(recommended_articles,request,view=self)
@@ -513,9 +514,6 @@ class User2UserView(APIView,PageNumberPagination):
                 userId,
                 user_to_user_similarity,
                 ratings) 
-        
-        
-        
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
@@ -814,8 +812,9 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        recommended_articles_with_contentBased=instance_for_content_based_recommeder.build_user_profile(userId)
-        recommended_articles_with_contentBased=Article.objects.filter(contentId__in=recommended_articles_with_contentBased)    
+        recommended_articles_with_contentBased,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
+        
+        # recommended_articles_with_contentBased=Article.objects.filter(contentId__in=recommended_articles_with_contentBased)    
 
         # User2user based recommender
     
@@ -862,7 +861,13 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                 self.userId,
                 user_to_user_similarity,
                 ratings) 
-            
+        cf_recommendations={}
+        for content_id in top_10_content_ids:
+            cf_recommendations[content_id]=ratings.loc[self.userId,content_id]
+        cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrength"],columns=top_10_content_ids).T 
+        
+        
+        
         return top_10_content_ids
         
     
