@@ -774,7 +774,7 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
-    def get(self,request,userId,contentId,format=None):
+    def get(self,request,userId,format=None):
         user_interact_contentId=self.get_object(userId)
         
         self.interactions=Interactions.objects.all()
@@ -819,7 +819,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
 
         # User2user based recommender
         self.userId=userId
-        self.contentId=contentId 
         self.path="similarityIndexWeights"
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
@@ -831,9 +830,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
-        
-        # If the contentId is None, this means the recommender 
-        # is not item-item based, in this case it would be user-user based recommender
         
         top_10_content_ids=self.forUser2UserBased()
         recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
