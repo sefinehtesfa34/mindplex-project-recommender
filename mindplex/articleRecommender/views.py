@@ -835,10 +835,23 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                                    how = 'outer', 
                                    left_on = 'contentId', 
                                    right_on = 'contentId').fillna(0.0)
+        self.cb_ensemble_weight = 10.0
+        self.cf_ensemble_weight = 100.0
         
-        # recommended_articles_with_user2userBased=Article.objects.filter(contentId__in=top_10_content_ids)
+        #Computing a hybrid recommendation score based on CF and CB scores
+        recommendations_df['eventStrengthHybrid'] = (recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight) \
+                                     + (recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
         
+        #Sorting recommendations by hybrid score
         
+        recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
+        print(recommendations_df)
+        top_10_content_ids=recommendations_df.contentId
+        
+        hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)
+        return self.get_paginated_response(serializer.data)
         
     def forUser2UserBased(self):
         user2user=User2UserBased(self.path)
@@ -869,10 +882,10 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         cf_recommendations={}
         for content_id in top_10_content_ids:
             cf_recommendations[content_id]=ratings.loc[self.userId,content_id]
-        cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrength"],columns=top_10_content_ids).T 
+        cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrengthCF"],columns=top_10_content_ids).T 
         cf_recommendations_df=cf_recommendations_df.reset_index()
         self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
-        
+
     
         
         

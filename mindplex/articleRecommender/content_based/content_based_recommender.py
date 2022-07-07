@@ -53,7 +53,7 @@ class ContentBasedRecommender:
                                key=lambda x: -x[1])
         
         similar_items_filtered = list(filter(lambda item: item[0] not in items_to_ignore, similar_items))
-        recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrength']) \
+        recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrengthCB']) \
                                     .head(topn)
         self.recommendations_df=recommendations_df
         print(self.recommendations_df)
