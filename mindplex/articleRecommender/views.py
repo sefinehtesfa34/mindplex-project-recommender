@@ -1,5 +1,6 @@
 import pickle
 from typing import Any, OrderedDict
+import numpy as np
 import pandas as pd
 from rest_framework.pagination import PageNumberPagination
 from django.http import Http404
@@ -13,7 +14,7 @@ from articleRecommender.model_relearner import MatrixFactorization
 from articleRecommender.models import Article, Interactions
 from articleRecommender.data_preprocessor.preProcessorModel import PreprocessingModel
 from articleRecommender.user2user import User2UserBased 
-from .serializers import  ArticleSerializer, ContentIdSerializer, InteractionsSerializer
+from .serializers import  ArticleContentIdSerializer, ArticleSerializer, ContentIdSerializer, InteractionsSerializer
 from django_pandas.io import read_frame
 import warnings
 warnings.filterwarnings("ignore")
@@ -172,9 +173,10 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
                             "contentId__contentId",
                             
                             ])
-        interactions_df.columns=["userId","eventType","contentId"]
-        interactions_df=interactions_df.drop([0]).reset_index().drop(["index"],axis=1) 
         
+        interactions_df=interactions_df.rename(columns={"userId":"userId","eventType":"eventType","contentId__contentId":"contentId"})
+        interactions_df=interactions_df.set_index("userId")  
+      
         self.article=Article.objects.exclude(pk__in=self.excluded_article_set)
         articles_df=read_frame(self.article,fieldnames=[
             "authorId",
@@ -219,7 +221,17 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
     def get(self,request,userId,format=None):
         
         user_interact_contentId=self.get_object(userId)
-        
+        serializer=ContentIdSerializer(user_interact_contentId,many=True)
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
+        items_to_ignore=Article.objects.filter(pk__in=self.items_to_ignore).only("contentId")
+        serializer=ArticleContentIdSerializer(items_to_ignore,many=True)
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
         self.interactions=Interactions.objects.all()
         interactions_df=read_frame(self.interactions,
                         fieldnames=[
@@ -250,8 +262,9 @@ class ContentBasedRecommenderView(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        recommended_articles,recommendations_df= instance_for_content_based_recommeder.build_user_profile(userId)
-        recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
+        recommendations_df= instance_for_content_based_recommeder.build_user_profile(userId,items_to_ignore=self.items_to_ignore)
+        recommended_articles=recommendations_df.contentId
+        recommended_articles=Article.objects.filter(contentId__in=list(recommended_articles))    
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
         
@@ -499,10 +512,14 @@ class User2UserView(APIView,PageNumberPagination):
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
     
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data] 
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+         
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+        
         
         
         
@@ -570,10 +587,14 @@ class Item2ItemBasedView(APIView,PageNumberPagination):
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
         
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+             
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+        
         
         
         top_10_content_ids=item2item.top_10_content_ids_finder(
@@ -663,10 +684,14 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
         
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+             
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+
+        
         
         # If the contentId is None, this means the recommender 
         # is not item-item based, in this case it would be user-user based recommender
@@ -744,6 +769,7 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
                 self.userId,
                 user_to_user_similarity,
                 ratings) 
+        
             
         return top_10_content_ids
     
@@ -762,7 +788,7 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
         mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
         return mapping_index_to_user_ids,mapping_userId_to_index
-    
+            
     
     def get_object(self,userId):
         
@@ -773,6 +799,19 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
             return None 
     def get(self,request,userId,format=None):
         user_interact_contentId=self.get_object(userId)
+        serializer=ContentIdSerializer(user_interact_contentId,many=True)
+        
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
+        items_to_ignore=Article.objects.filter(pk__in=self.items_to_ignore).only("contentId")
+        serializer=ArticleContentIdSerializer(items_to_ignore,many=True)
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
+        self.interactions=Interactions.objects.all()
         
         self.interactions=Interactions.objects.all()
         interactions_df=read_frame(self.interactions,
@@ -811,7 +850,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         except AssertionError:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        _,self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId)
+        self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId,items_to_ignore=self.items_to_ignore)
+        
         
         # User2user based recommender
     
@@ -822,10 +862,15 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.excludedArticles(userId)    
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
-        content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+        
         content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
         serializer=ContentIdSerializer(content_ids,many=True)
         self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        
+
+        
         
         self.forUser2UserBased()
         #Combining the results by contentId
@@ -843,8 +888,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         #Sorting recommendations by hybrid score
         
         recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
-        print(recommendations_df)
         top_10_content_ids=recommendations_df.contentId
+        
         
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
@@ -884,11 +929,165 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         cf_recommendations_df=cf_recommendations_df.reset_index()
         self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
 
-    
-        
-        
-        
 class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+    def excludedArticles(self,userId):
+        self.excluded_article=Interactions.objects.filter(userId=userId).only("contentId")
+        serializer=ContentIdSerializer(self.excluded_article,many=True)
+        self.excluded_article_set=set()
+        for dict in serializer.data:
+            self.excluded_article_set.add(list(dict.values())[0])
+    def itemIdMapper(self,ratings):
+        #The index of the ratings data frame would be item ids and the 
+        # columns would be user ids
+        # The values would be the rating
         
+        mapping_item_id_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
+        mapping_index_to_item_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
+        return mapping_index_to_item_ids,mapping_item_id_to_index
+    
+    def get_object(self,userId):
+        
+        try:
+            return Interactions.objects.filter(userId=userId)
+            
+        except Interactions.DoesNotExist:
+            return None 
+    def get(self,request,userId,format=None):
+        user_interact_contentId=self.get_object(userId)
+        serializer=ContentIdSerializer(user_interact_contentId,many=True)
+        
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
+        items_to_ignore=Article.objects.filter(pk__in=self.items_to_ignore).only("contentId")
+        serializer=ArticleContentIdSerializer(items_to_ignore,many=True)
+        self.items_to_ignore=[]
+        for dict_val in serializer.data:
+            value=list(dict_val.values())[0]
+            self.items_to_ignore.append(value)
+        self.interactions=Interactions.objects.all()
+        
+        self.interactions=Interactions.objects.all()
+        interactions_df=read_frame(self.interactions,
+                        fieldnames=[
+                            "userId",
+                            "eventType",
+                            "contentId__contentId",
+                            
+                            ])
+        interactions_df=interactions_df.rename(
+            columns={
+                "userId":"userId",
+                "eventType":"eventType",
+                "contentId__contentId":"contentId"
+                }
+            )
+        
+        interactions_df=interactions_df.set_index("userId")  
+      
+        self.article=Article.objects.all()
+        articles_df=read_frame(self.article,fieldnames=[
+            "authorId",
+            "contentId",
+            "content",
+            "title"])
+        
+        
+        instance_for_content_based_recommeder=ContentBasedRecommender(
+            articles_df,
+            interactions_df,
+            self.eventStrength,
+            )
+        
+        try:
+            assert(user_interact_contentId)
+        except AssertionError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        self.cb_recommendations_df=instance_for_content_based_recommeder.build_user_profile(userId,items_to_ignore=self.items_to_ignore)
+        self.userId=userId
+        self.path="similarityIndexWeights"
+        self.similarity_path="similarity"
+        self.ratings_path="ratingsWeight"
+        self.excludedArticles(userId)    
+        self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
+        serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
+        content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+        content_ids=np.unique(content_ids).tolist()
+             
+        content_ids=Article.objects.filter(pk__in=content_ids).only("contentId")
+        serializer=ContentIdSerializer(content_ids,many=True)
+        self.user_uninteracted_content_ids=[list(contentId.values())[0] for contentId in serializer.data]
+
+        
+        
+        self.forItem2ItemBased()    
+        # Item2Item based recommender
+        recommendations_df = self.cb_recommendations_df.merge(self.cf_recommendations_df,
+                                   how = 'outer', 
+                                   left_on = 'contentId', 
+                                   right_on = 'contentId').fillna(0.0)
+        self.cb_ensemble_weight = 10.0
+        self.cf_ensemble_weight = 100.0
+        
+        #Computing a hybrid recommendation score based on CF and CB scores
+        recommendations_df['eventStrengthHybrid'] = (recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight) \
+                                     + (recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
+        
+        #Sorting recommendations by hybrid score
+        
+        recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
+        top_10_content_ids=recommendations_df.contentId
+        
+        
+        hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
+        result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
+        serializer=ArticleSerializer(result,many=True)
+        return self.get_paginated_response(serializer.data)
+        
+        
+    def forItem2ItemBased(self):
+        item2item=Item2ItemBased(self.path)
+        
+        with open(self.ratings_path,"rb") as ratings_weight:
+            ratings=pickle.load(ratings_weight)
+
+        ratings=ratings.T
+        with open(self.path,"rb") as weights:
+            user_similarity,item_similarity=pickle.load(weights) 
+        with open(self.similarity_path,"rb") as similarity_file:
+            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
+    
+        mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
+        index=mapping_itemId_to_index.get(self.contentId,None)
+        
+        if index==None:
+            return Response(status.HTTP_400_BAD_REQUEST)
+        
+        similar_items_index=item_similarity[index][:100]
+        
+        
+        similar_item_ids=[]
+        for index in similar_items_index:
+            similar_item_ids.append(mapping_index_to_item_ids[index])
+        
+        top_10_content_ids=item2item.top_10_content_ids_finder(
+                self.user_uninteracted_content_ids,
+                similar_item_ids,
+                mapping_itemId_to_index,
+                self.contentId,
+                self.userId,
+                item_to_item_similarity,
+                ratings)
+        cf_recommendations={}
+        for content_id in top_10_content_ids:
+            cf_recommendations[content_id]=ratings.loc[content_id,self.userId]
+        cf_recommendations_df=pd.DataFrame(cf_recommendations,index=["eventStrengthCF"],columns=top_10_content_ids).T 
+        cf_recommendations_df=cf_recommendations_df.reset_index()
+        self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
+
+    
