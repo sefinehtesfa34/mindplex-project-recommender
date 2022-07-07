@@ -121,9 +121,14 @@ class MatrixFactorization:
     
         
     def userSimilarity(self):
-        return cosine_similarity(self.P) 
+        user_similarity_scaler=StandardScaler(with_mean=True,with_std=True)
+        scaled_P=user_similarity_scaler.fit_transform(self.P)
+        return cosine_similarity(scaled_P) 
     def itemSimilarity(self):
-        return cosine_similarity(self.Q)
+        item_similarity_scaler=StandardScaler(with_mean=True,with_std=True)
+        scaled_Q=item_similarity_scaler.fit_transform(self.Q)
+        return cosine_similarity(scaled_Q)
+    
      
      
      
