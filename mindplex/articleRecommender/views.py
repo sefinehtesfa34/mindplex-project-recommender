@@ -758,11 +758,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         self.excluded_article_set=set()
         for dict in serializer.data:
             self.excluded_article_set.add(list(dict.values())[0])
-    def userIdMapper(self,ratings):
-        mapping_userId_to_index=OrderedDict(zip(ratings.index,list(range(len(ratings.index)))))
-        mapping_index_to_user_ids=OrderedDict(zip(list(range(len(ratings.index))),ratings.index))
-        return mapping_index_to_user_ids,mapping_userId_to_index
-    
     
     def get_object(self,userId):
         
@@ -846,6 +841,7 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         print(recommendations_df)
         top_10_content_ids=recommendations_df.contentId
         
+        
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)
@@ -884,11 +880,8 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         cf_recommendations_df=cf_recommendations_df.reset_index()
         self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
 
-    
-        
-        
-        
 class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        
+        self.eventStrength=eventStrength
+    
