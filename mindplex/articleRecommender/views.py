@@ -754,6 +754,19 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
 class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.eventStrength=eventStrength
+        
+    def get_object(self,userId):
+        
+        try:
+            return Interactions.objects.filter(userId=userId)
+            
+        except Interactions.DoesNotExist:
+            return None 
+    
+    
+        
+        
         
 class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
