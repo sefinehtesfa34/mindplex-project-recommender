@@ -1,6 +1,7 @@
 
 import numpy as np
 import scipy
+import pandas as pd 
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -25,7 +26,7 @@ class ContentBasedRecommender:
                                                 self.articles_df['title'] \
                                                 + "" + self.articles_df['content'])
     
-    def build_user_profile(self,userId):
+    def build_user_profile(self,userId,items_to_ignore=[],topn=10):
         #The assumption is that self.interactions_df is userId indexed dataframe
         user_interacted_contentId=self.interactions_df.loc[userId]["contentId"]
         user_profile=[]
@@ -47,9 +48,17 @@ class ContentBasedRecommender:
                                     / np.sum(self.eventStrength)
         user_profile_norm = sklearn.preprocessing.normalize(user_item_strengths_weighted_avg)
         cosine_similarities = cosine_similarity(user_profile_norm, self.tfidf_matrix)
-        similar_indices = cosine_similarities.argsort().flatten()[-10:] 
+        similar_indices = cosine_similarities.argsort().flatten()[-topn:]
+        similar_items = sorted([(self.item_ids[index], cosine_similarities[0,index]) for index in similar_indices], 
+                               key=lambda x: -x[1])
+        
+        similar_items_filtered = list(filter(lambda item: item[0] not in items_to_ignore, similar_items))
+        recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrength']) \
+                                    .head(topn)
+        self.recommendations_df=recommendations_df
         # pandas.Series.argSort() returns the indices that sort the dataFrame.
         list_of_contentIds=[self.item_ids[index] for index in similar_indices ]
+        
         return list_of_contentIds
 
     
