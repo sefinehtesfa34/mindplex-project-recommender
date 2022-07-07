@@ -755,3 +755,7 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         
+class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        
