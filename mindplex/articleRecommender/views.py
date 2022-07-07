@@ -829,7 +829,6 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                 }
             )
         interactions_df=interactions_df.set_index("userId")  
-      
         self.article=Article.objects.all()
         articles_df=read_frame(self.article,fieldnames=[
             "authorId",
@@ -954,10 +953,11 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
-    def get(self,request,userId,format=None):
+    def get(self,request,userId,contentId):
+        self.contentId=contentId
+        self.userId=userId 
         user_interact_contentId=self.get_object(userId)
         serializer=ContentIdSerializer(user_interact_contentId,many=True)
-        
         self.items_to_ignore=[]
         for dict_val in serializer.data:
             value=list(dict_val.values())[0]
@@ -1057,9 +1057,9 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
 
         ratings=ratings.T
         with open(self.path,"rb") as weights:
-            user_similarity,item_similarity=pickle.load(weights) 
+            _,item_similarity=pickle.load(weights) 
         with open(self.similarity_path,"rb") as similarity_file:
-            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
+            _,item_to_item_similarity=pickle.load(similarity_file)
     
         mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
         index=mapping_itemId_to_index.get(self.contentId,None)
@@ -1089,4 +1089,12 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         cf_recommendations_df=cf_recommendations_df.reset_index()
         self.cf_recommendations_df=cf_recommendations_df.rename(columns={"index":"contentId"})
 
+    
+    
+    
+    
+    
+    
+    
+    
     
