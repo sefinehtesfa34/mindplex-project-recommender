@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 import scipy
 import pandas as pd 
 import sklearn
@@ -53,13 +54,13 @@ class ContentBasedRecommender:
                                key=lambda x: -x[1])
         
         similar_items_filtered = list(filter(lambda item: item[0] not in items_to_ignore, similar_items))
-        recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrength']) \
+        recommendations_df = pd.DataFrame(similar_items_filtered, columns=['contentId', 'eventStrengthCB']) \
                                     .head(topn)
         self.recommendations_df=recommendations_df
+        print(self.recommendations_df)
         # pandas.Series.argSort() returns the indices that sort the dataFrame.
         list_of_contentIds=[self.item_ids[index] for index in similar_indices ]
-        
-        return list_of_contentIds
+        return list_of_contentIds,recommendations_df
 
     
         
