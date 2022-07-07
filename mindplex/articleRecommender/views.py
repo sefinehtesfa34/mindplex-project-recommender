@@ -818,12 +818,13 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         recommended_articles=Article.objects.filter(contentId__in=recommended_articles)    
 
         # User2user based recommender
+    
         self.userId=userId
         self.path="similarityIndexWeights"
         self.similarity_path="similarity"
         self.ratings_path="ratingsWeight"
         self.excludedArticles(userId)    
-    
+        user2user=User2UserBased(self.path) 
         self.user_uninteracted_items=Interactions.objects.exclude(contentId__in=self.excluded_article_set).only("contentId")
         serializer=ContentIdSerializer(self.user_uninteracted_items,many=True)
         content_ids=[list(contentId.values())[0] for contentId in serializer.data]     
