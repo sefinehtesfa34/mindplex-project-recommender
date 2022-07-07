@@ -751,3 +751,7 @@ class HybirdRecommenderView(APIView,PageNumberPagination):
         return top_10_content_ids
     
 
+class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        
