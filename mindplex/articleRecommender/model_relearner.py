@@ -2,6 +2,7 @@ import pickle
 import tensorflow as tf  
 import numpy as np 
 import warnings 
+from sklearn.preprocessing import StandardScaler 
 from sklearn.metrics.pairwise import cosine_similarity
 warnings.filterwarnings("ignore")
 class MatrixFactorization:
@@ -14,9 +15,11 @@ class MatrixFactorization:
                  random_seed=1000,
                  path='weights'
                  ) -> None:
-        self.pivot_ratings = ratings
         
-        self.ratings = tf.convert_to_tensor(ratings,dtype=tf.float32)
+        self.pivot_ratings = ratings
+        scaler=StandardScaler(with_mean=True,with_std=True)
+        scaled_ratings=scaler.fit_transform(ratings)
+        self.ratings = tf.convert_to_tensor(scaled_ratings,dtype=tf.float32)
         
         self.mask=tf.not_equal(self.ratings,0)
         self.num_users,self.num_items=self.ratings.shape
