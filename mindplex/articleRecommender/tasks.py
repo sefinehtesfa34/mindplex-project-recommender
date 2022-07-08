@@ -1,12 +1,15 @@
-# import time
-# from mindplex.celery import app
+import time
+from mindplex.celery import app
 # from recommender.utils.models import MlModels
-# from celery import shared_task
-# from django.core.cache import cache
+from celery import shared_task
+from django.core.cache import cache
 
 # from recommender.utils.models import logger
 
 # LOCK_EXPIRE = 60 
+@shared_task
+def add():
+    return 10+100
 
 
 
