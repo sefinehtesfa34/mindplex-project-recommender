@@ -2,9 +2,9 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 from celery import Celery
-os.environ.setdefault('DJANGO_SETTINGS_MODULE','snetrecommender.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','mindplex.settings')
 
-app = Celery('snetrecommender')
+app = Celery('mindplex')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 

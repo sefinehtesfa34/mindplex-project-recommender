@@ -195,13 +195,12 @@ class PopularityRecommenderView(APIView,PageNumberPagination):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
             
-        self.recommended_items=self.preprocessingModel.recommend()
-        
+        recommendations_df=self.preprocessingModel.recommend()
+        self.recommended_items=recommendations_df.contentId
+        print(recommendations_df)
         recommended_articles=Article.objects.filter(contentId__in=list(self.recommended_items))
         result=self.paginate_queryset(recommended_articles,request,view=self)
         serializer=ArticleSerializer(result,many=True)    
-        
-
         return self.get_paginated_response(serializer.data)
 
 class ContentBasedRecommenderView(APIView,PageNumberPagination):
@@ -884,17 +883,12 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
         #Computing a hybrid recommendation score based on CF and CB scores
         recommendations_df['eventStrengthHybrid'] = (recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight) \
                                      + (recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
-        print(recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight)
-        print(recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
         #Sorting recommendations by hybrid score
         
         recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
+        print(recommendations_df)
+        
         top_10_content_ids=recommendations_df.contentId
-        
-        # print(self.cf_recommendations_df)
-        # print(self.cb_recommendations_df)
-        
-        print(recommendations_df["eventStrengthHybrid"])
         
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)

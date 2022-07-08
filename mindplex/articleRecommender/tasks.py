@@ -1,5 +1,5 @@
 # import time
-# from snetrecommender.celery import app
+# from mindplex.celery import app
 # from recommender.utils.models import MlModels
 # from celery import shared_task
 # from django.core.cache import cache
