@@ -978,7 +978,6 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
             value=list(dict_val.values())[0]
             self.items_to_ignore.append(value)
         self.interactions=Interactions.objects.all()
-        
         self.interactions=Interactions.objects.all()
         interactions_df=read_frame(self.interactions,
                         fieldnames=[
