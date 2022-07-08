@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'articleRecommender',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [

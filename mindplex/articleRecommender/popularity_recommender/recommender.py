@@ -16,5 +16,6 @@ class PopularityRecommender:
                                .sort_values('eventStrength', ascending = False) \
                                .head(topn)
 
+
         return recommendations_df
     
