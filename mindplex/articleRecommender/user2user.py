@@ -16,6 +16,7 @@ class User2UserBased:
             temp=0
             for user_id in similar_user_ids:
                 rating=ratings.loc[user_id,content_id]
+                if rating==0:continue
                 temp+=rating 
                 index1=mapping_userId_to_index[userId]
                 index2=mapping_userId_to_index[user_id]
