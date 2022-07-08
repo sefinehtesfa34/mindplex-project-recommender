@@ -879,16 +879,23 @@ class HybirdUser2UserAndContentBased(APIView,PageNumberPagination):
                                    right_on = 'contentId').fillna(0.0)
         self.cb_ensemble_weight = 10.0
         self.cf_ensemble_weight = 100.0
+        # print(self.cf_recommendations_df["eventStrengthCF"])
+        # print(self.cb_recommendations_df["eventStrengthCB"])
         
         #Computing a hybrid recommendation score based on CF and CB scores
         recommendations_df['eventStrengthHybrid'] = (recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight) \
                                      + (recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
-        
+        print(recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight)
+        print(recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
         #Sorting recommendations by hybrid score
         
         recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
         top_10_content_ids=recommendations_df.contentId
         
+        # print(self.cf_recommendations_df)
+        # print(self.cb_recommendations_df)
+        
+        print(recommendations_df["eventStrengthHybrid"])
         
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
@@ -954,7 +961,9 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
             
         except Interactions.DoesNotExist:
             return None 
-    def get(self,request,userId,format=None):
+    def get(self,request,userId,contentId,format=None):
+        self.contentId=contentId
+        self.userId=userId 
         user_interact_contentId=self.get_object(userId)
         serializer=ContentIdSerializer(user_interact_contentId,many=True)
         
@@ -1024,7 +1033,9 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
 
         
         
-        self.forItem2ItemBased()    
+        self.forItem2ItemBased() 
+        # print(self.cf_recommendations_df)
+        # print(self.cb_recommendations_df)  
         # Item2Item based recommender
         recommendations_df = self.cb_recommendations_df.merge(self.cf_recommendations_df,
                                    how = 'outer', 
@@ -1041,7 +1052,9 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         
         recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
         top_10_content_ids=recommendations_df.contentId
-        
+        # print(recommendations_df)    
+        # print(recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight)
+        # print(recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
         
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
@@ -1057,18 +1070,16 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
 
         ratings=ratings.T
         with open(self.path,"rb") as weights:
-            user_similarity,item_similarity=pickle.load(weights) 
+            _,item_similarity=pickle.load(weights) 
         with open(self.similarity_path,"rb") as similarity_file:
-            user_to_user_similarity,item_to_item_similarity=pickle.load(similarity_file)
+            _,item_to_item_similarity=pickle.load(similarity_file)
     
         mapping_index_to_item_ids,mapping_itemId_to_index=self.itemIdMapper(ratings)
         index=mapping_itemId_to_index.get(self.contentId,None)
         
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
-        
         similar_items_index=item_similarity[index][:100]
-        
         
         similar_item_ids=[]
         for index in similar_items_index:
@@ -1079,9 +1090,8 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
                 similar_item_ids,
                 mapping_itemId_to_index,
                 self.contentId,
-                self.userId,
                 item_to_item_similarity,
-                ratings)
+                )
         cf_recommendations={}
         for content_id in top_10_content_ids:
             cf_recommendations[content_id]=ratings.loc[content_id,self.userId]
