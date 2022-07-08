@@ -3,13 +3,16 @@ from mindplex.celery import app
 # from recommender.utils.models import MlModels
 from celery import shared_task
 from django.core.cache import cache
-
+import requests
 # from recommender.utils.models import logger
 
 # LOCK_EXPIRE = 60 
+
 @shared_task
-def add():
-    return 10+100
+def relearnerTask():
+    URL =r"http://localhost:8000/relearner/user-based/item-based/"
+    return requests.get(url=URL)
+
 
 
 
