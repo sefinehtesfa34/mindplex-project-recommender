@@ -1034,9 +1034,6 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         
         
         self.forItem2ItemBased() 
-        # print(self.cf_recommendations_df)
-        # print(self.cb_recommendations_df)  
-        # Item2Item based recommender
         recommendations_df = self.cb_recommendations_df.merge(self.cf_recommendations_df,
                                    how = 'outer', 
                                    left_on = 'contentId', 
@@ -1052,9 +1049,7 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         
         recommendations_df = recommendations_df.sort_values('eventStrengthHybrid', ascending=False).head(10)
         top_10_content_ids=recommendations_df.contentId
-        # print(recommendations_df)    
-        # print(recommendations_df['eventStrengthCB'] * self.cb_ensemble_weight)
-        # print(recommendations_df['eventStrengthCF'] * self.cf_ensemble_weight)
+        print(recommendations_df)    
         
         hybrid_recommended_articles=Article.objects.filter(contentId__in=top_10_content_ids)
         result=self.paginate_queryset(hybrid_recommended_articles,request,view=self)
@@ -1079,7 +1074,7 @@ class HybridItem2ItemAndContentBased(APIView,PageNumberPagination):
         
         if index==None:
             return Response(status.HTTP_400_BAD_REQUEST)
-        similar_items_index=item_similarity[index][:100]
+        similar_items_index=item_similarity[index]
         
         similar_item_ids=[]
         for index in similar_items_index:

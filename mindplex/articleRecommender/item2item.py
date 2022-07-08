@@ -20,8 +20,8 @@ class Item2ItemBased:
                 similarity_score=item_to_item_similarity[(index1,index2)] 
             except:
                 similarity_score=item_to_item_similarity[(index2,index1)]
-            similarity_scores.append(similarity_score,item_id)
-        similarity_score=sorted(similarity_scores,ascending=False)
-        top_10_content_ids=similarity_scores[:10]
+            similarity_scores.append((similarity_score,item_id))
+        similarity_score=sorted(similarity_scores,reverse=True)
+        top_10_content_ids=[content_id for _,content_id in similarity_scores[:10]]
         return top_10_content_ids
     
