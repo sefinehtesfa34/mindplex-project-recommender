@@ -11,7 +11,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.beat_schedule = {
     'add-every-20-seconds': {
         'task': 'articleRecommender.tasks.relearnerTask',
-        'schedule': 20,
+        'schedule': 5,
     }
 }
 app.autodiscover_tasks()

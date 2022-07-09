@@ -5,7 +5,7 @@ import requests
 @shared_task
 def relearnerTask():
     URL =r"http://localhost:8000/relearner/user-based/item-based/"
-    return requests.get(url=URL)
+    requests.get(url=URL)
 
 
 
